@@ -1,6 +1,7 @@
 import sys
-sys.path.append(r"C:\Users\martb\Documents\paperpclip_max\PaperclipMaximiser\src")
 sys.path.append(r"C:\Users\martb\Documents\paperpclip_max\PaperclipMaximiser")
+sys.path.append(r"C:\Users\martb\Documents\paperpclip_max\PaperclipMaximiser\env")
+sys.path.append(r"C:\Users\martb\Documents\paperpclip_max\PaperclipMaximiser\env\src")
 
 from env.src.llm_factory import LLMFactory
 from eval.open.beam.beam_search_milestones import MilestonesBeamSearchExecutor
@@ -155,18 +156,33 @@ def get_starting_state(instance, config, starting_scenario_folder, reset_game_st
     config.starting_scenario_code = starting_code
     config.starting_scenario_logs = result
     return config
-    
 
-
-def create_factorio_instances() -> List[FactorioInstance]:
-    def init_instance(params: Tuple[str, int, int]) -> FactorioInstance:
-        ip, udp_port, tcp_port = params
-        return FactorioInstance(address=ip, tcp_port=tcp_port, bounding_box=200,
-                                fast=True, cache_scripts=False, inventory={})
-
+def create_factorio_instance(instance_id: int) -> FactorioInstance:
+    """Create a single Factorio instance"""
     ips, udp_ports, tcp_ports = get_local_container_ips()
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        return list(executor.map(init_instance, zip(ips, udp_ports, tcp_ports)))
+
+    instance = FactorioInstance(
+        address=ips[instance_id],
+        tcp_port=tcp_ports[instance_id],
+        bounding_box=200,
+        fast=True,
+        cache_scripts=True,
+        inventory={},
+        all_technologies_researched=False
+    )
+    instance.speed(10)
+    return instance
+
+
+#def create_factorio_instances() -> List[FactorioInstance]:
+#    def init_instance(params: Tuple[str, int, int]) -> FactorioInstance:
+#        ip, udp_port, tcp_port = params
+#        return FactorioInstance(address=ip, tcp_port=tcp_port, bounding_box=200,
+#                                fast=True, cache_scripts=False, inventory={})
+#
+#    ips, udp_ports, tcp_ports = get_local_container_ips()
+#    with concurrent.futures.ThreadPoolExecutor() as executor:
+#        return list(executor.map(init_instance, zip(ips, udp_ports, tcp_ports)))
 
 
 SYSTEM_PROMPT = \
@@ -248,9 +264,9 @@ async def main():
 
     # Initialize components
     try:
-        instances = create_factorio_instances()
-        for instance in instances:
-            instance.speed(10)  # Speed up the game for faster evaluation
+        instances = [create_factorio_instance(i) for i in range(4)]
+        #for instance in instances:
+        #    instance.speed(10)  # Speed up the game for faster evaluation
     except Exception as e:
         print(
             "\033[91mError initialising Factorio instances. Are the docker containers running, and have they been activated?\033[91m")
@@ -271,9 +287,8 @@ async def main():
     llm_factory = LLMFactory(model=model_to_evaluate)
     version_description = "eval_agentic_supervised"
 
-    task_folder = r"src\lab_play_tasks"
-    starting_scenario_folder = r"src\lab_play_tasks\starting_scenarios"
-    result_path = r"src\lab_play_tasks\results"
+    task_folder = r"eval\tasks\task_definitions"
+    result_path = r"eval\tasks\supervised_results"
     tasks = ["iron_gear_wheel_populated_1"]
     search_type = "beam_supervised"
     search_iterations = 1
