@@ -17,8 +17,8 @@ from eval.open.mcts.parallel_supervised_config import SupervisedExecutorConfig
 from eval.open.mcts.planning_models import PlanOutput, TaskOutput, Step, LanguageOutput, InitialPlanOutput
 from eval.open.model.game_state import GameState
 from eval.open.model.program import Program
-from instance import FactorioInstance
-from eval.tasks import TaskConfig
+from env.src.instance import FactorioInstance
+from eval.tasks.task_abc import TaskABC
 logger = logging.basicConfig(level=logging.INFO)
 from abc import ABC, abstractmethod
 
@@ -130,7 +130,7 @@ class SupervisedTaskExecutorABC(ABC):
             )
 
     async def search_supervised(self, n_iterations: int, 
-                                task: TaskConfig, 
+                                task: TaskABC, 
                                 skip_failures: bool = False,
                                 run_id: str = ""):
         """
@@ -167,7 +167,7 @@ class SupervisedTaskExecutorABC(ABC):
             return results
 
 
-    async def generate_plans(self, task: TaskConfig, nr_of_beams: int) -> List[InitialPlanOutput]:
+    async def generate_plans(self, task: TaskABC, nr_of_beams: int) -> List[InitialPlanOutput]:
         
         plan_outputs = {}
         for idx in range(nr_of_beams):
@@ -178,7 +178,7 @@ class SupervisedTaskExecutorABC(ABC):
         return plan_outputs
     
     @abstractmethod
-    async def _run_group_search(self, group: PlanningGroupV2, task: TaskConfig, n_iterations: int, skip_failures: bool = False):
+    async def _run_group_search(self, group: PlanningGroupV2, task: TaskABC, n_iterations: int, skip_failures: bool = False):
         """Run parallel planning search across all groups"""
         """
         Need to check again over what to do mcts exactly
@@ -288,7 +288,7 @@ class SupervisedTaskExecutorABC(ABC):
     
 
     def check_for_task_completion(self, 
-                                  task: TaskConfig,
+                                  task: TaskABC,
                                   plan: PlanOutput,
                                   group: PlanningGroupV2) -> bool:
         sleep_seconds = 60
@@ -328,7 +328,7 @@ class SupervisedTaskExecutorABC(ABC):
 
     def _create_output_completed_program(self, plan: PlanOutput,
                                  parent_id: Optional[int],
-                                 task: TaskConfig,
+                                 task: TaskABC,
                                  group: PlanningGroupV2) -> PlanOutput:
         if task.check_for_completion:
             check_result, post_production_flows = self.check_for_task_completion(task, plan, group)
