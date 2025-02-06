@@ -35,13 +35,14 @@ global.actions.production_stats = function(player)
 end
 
 global.action.reset_production_stats = function(player)
+    game.print("Resetting production statistics")
     local force = player.force
     -- Reset item statistics
     force.item_production_statistics.clear()
-
+    game.print("Resetting production statistics1")
     -- Reset fluid statistics
     force.fluid_production_statistics.clear()
-
+    game.print("Resetting production statistics2")
     global.harvested_items = {}
     global.crafted_items = {}
 end
