@@ -259,6 +259,7 @@ class BoundingBox(BaseModel):
     left_bottom: Position
     right_top: Position
 
+    @property
     def center(self) -> Position:
         return Position(
             x=(self.left_top.x + self.right_bottom.x)/2,
@@ -374,6 +375,17 @@ class Entity(EntityCore):
         return f"\n\t{self.__class__.__name__}({', '.join(items)})"
     def _get_prototype(self):
         return self.prototype
+    
+
+    @classmethod
+    @property
+    def width(cls):
+        return cls._width
+        
+    @classmethod
+    @property
+    def height(cls):
+        return cls._height
 
 class StaticEntity(Entity):
     neighbours: Optional[Union[Dict, List[EntityCore]]] = []
@@ -382,6 +394,8 @@ class Splitter(Entity):
     input_positions: List[Position]
     output_positions: List[Position]
     inventory: List[Inventory] = []
+    _height: float = 1
+    _width: float = 2
 
 class TransportBelt(Entity):
     input_position: Position
@@ -389,6 +403,8 @@ class TransportBelt(Entity):
     inventory: Inventory = Inventory()
     is_terminus: bool = False
     is_source: bool = False
+    _height: float = 1
+    _width: float = 1
 
     def __repr__(self):
         return f"Belt(({self.input_position}) -> ({self.output_position}), direction={self.direction})"
@@ -412,6 +428,8 @@ class EnergySource(BaseModel):
 
 class Accumulator(StaticEntity, Electric):
     energy_source: Optional[EnergySource] = None
+    _height: float = 2
+    _width: float = 2
 
 class Inserter(StaticEntity, Electric):
     pickup_position: Optional[Position] = None
@@ -419,19 +437,28 @@ class Inserter(StaticEntity, Electric):
 
 class UndergroundBelt(Entity):
     type: str
+    _height: float = 1
+    _width: float = 1
 
 class MiningDrill(StaticEntity):
     drop_position: Position
     resources: List[Ingredient]
 
 class ElectricMiningDrill(MiningDrill, Electric):
+    _height: float = 3
+    _width: float = 3
     pass
 
 class BurnerInserter(Inserter, BurnerType):
+    _height: float = 1
+    _width: float = 1
     pass
 
 class BurnerMiningDrill(MiningDrill, BurnerType):
-    pass
+    # Define these as class attributes using a class decorator
+    # or in a metaclass to ensure they're properly set up
+    _width = 2
+    __height = 2
 
 class Ammo(BaseModel):
     name: str
@@ -440,12 +467,16 @@ class Ammo(BaseModel):
 
 class GunTurret(StaticEntity):
     turret_ammo: Inventory = Inventory()
+    _height: float = 2
+    _width: float = 2
 
 class AssemblingMachine(StaticEntity, Electric):
     recipe: Optional[Recipe] = None  # Prototype
     assembling_machine_input: Inventory = Inventory()
     assembling_machine_output: Inventory = Inventory()
     assembling_machine_modules: Inventory = Inventory()
+    _height: float = 3
+    _width: float = 3
 
 class FluidHandler(StaticEntity):
     connection_points: List[Position] = []
@@ -453,10 +484,14 @@ class FluidHandler(StaticEntity):
     fluid_systems: Optional[Union[dict, list]] = []
 
 class PumpJack(MiningDrill, FluidHandler, Electric):
+    _height: float = 3
+    _width: float = 3
     pass
 
 class Boiler(FluidHandler, BurnerType):
     steam_output_point: Optional[Position] = None
+    _height: float = 2
+    _width: float = 3
 
 
 class Generator(FluidHandler, Electric):
@@ -464,11 +499,15 @@ class Generator(FluidHandler, Electric):
 
 
 class OffshorePump(FluidHandler):
+    _height: float = 1
+    _width: float = 2
     pass
     #fluid_box: Optional[Union[dict,list]] = []
 
 class ElectricityPole(Entity, Electric):
     flow_rate: float
+    _height: float = 1
+    _width: float = 1
 
     def __hash__(self):
         return self.electrical_id
@@ -476,14 +515,20 @@ class ElectricityPole(Entity, Electric):
 class Furnace(Entity, BurnerType):
     furnace_source: Inventory = Inventory()
     furnace_result: Inventory = Inventory()
+    _height: float = 2
+    _width: float = 2
 
 class Chest(Entity):
     inventory: Inventory = Inventory()
+    _height: float = 1
+    _width: float = 1
 
 class Lab(Entity, Electric):
     lab_input: Inventory = Inventory()
     lab_modules: Inventory = Inventory()
     research: Optional[Any] = None # Technology
+    _height: float = 3
+    _width: float = 3
 
     def __repr__(self) -> str:
         from factorio_types import technology_by_name
@@ -497,6 +542,8 @@ class Pipe(Entity):
     flow_rate: float
     contents: float
     fluid: Optional[str] = None
+    _height: float = 1
+    _width: float = 1
 
 class EntityGroup(BaseModel):
     id: int

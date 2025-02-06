@@ -114,6 +114,13 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
         self.prototype_name = prototype_name
         self.entity_class = entity_class_name
 
+    @property
+    def WIDTH(self):
+        return self.entity_class._width  # Access the class attribute directly
+    
+    @property
+    def HEIGHT(self):
+        return self.entity_class._height
 
 prototype_by_name = {prototype.value[0]: prototype for prototype in Prototype}
 
