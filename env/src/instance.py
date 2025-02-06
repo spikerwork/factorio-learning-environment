@@ -151,11 +151,11 @@ class FactorioInstance:
             # Load variables / functions from game state
             self.namespace.load(game_state)
 
-        # try:
-        #     self.namespace.observe_all()
-        # except Exception as e:
-        #     print(e)
-        #     pass
+        #try:
+        #    self.namespace.observe_all()
+        #except Exception as e:
+        #    print(e)
+        #    pass
 
         try:
             self.initial_score, goal = self.namespace.score()
@@ -342,16 +342,10 @@ class FactorioInstance:
         #     future = executor.submit(self._eval_with_timeout, expr)
         #     score, goal, result = future.result(timeout)
         #     return score, goal, result
-        def handler(signum, frame):
-            raise TimeoutError()
-
-        signal.signal(signal.SIGALRM, handler)
-        signal.alarm(timeout)
-
-        try:
-            return self.namespace.eval_with_timeout(expr)
-        finally:
-            signal.alarm(0)
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(self.namespace.eval_with_timeout, expr)
+            score, goal, result = future.result(timeout)
+            return score, goal, result
 
 
     def eval(self, expr, timeout=60):
