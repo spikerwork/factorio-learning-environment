@@ -335,7 +335,7 @@ class EntityCore(BaseModel):
         return f"Entity(name='{self.name}', direction={self.direction.name}, position=Position({self.position})"
 
 class Entity(EntityCore):
-
+    id: Optional[int] = None
     energy: float
     type: Optional[str] = None
     dimensions: Dimensions
@@ -352,7 +352,7 @@ class Entity(EntityCore):
         all_fields = self.__dict__
 
         # Filter out private attributes and excluded fields
-        excluded_fields = {'dimensions', 'prototype', 'type', 'health', 'game'}
+        excluded_fields = {'dimensions', 'prototype', 'type', 'health', 'game', 'id'}
         rename_fields = {}
         repr_dict = {}
 
@@ -434,11 +434,11 @@ class Inserter(StaticEntity, Electric):
     pickup_position: Optional[Position] = None
     drop_position: Position
 
-class UndergroundBelt(Entity):
-    type: str
+class UndergroundBelt(TransportBelt):
+    is_input: bool
+    connected_to: Optional[int] = None
     _height: float = 1
     _width: float = 1
-
 class MiningDrill(StaticEntity):
     drop_position: Position
     resources: List[Ingredient]
