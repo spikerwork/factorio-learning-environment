@@ -25,6 +25,7 @@ from datetime import datetime
 from lab_play_tasks.task_configs import OpenEndedTaskConfig, LAB_PLAY_POPULATED_STARTING_INVENTORY
 import copy
 from utils import eval_program_with_achievements
+from lab_play_tasks.throughput_task import ThroughputTask
 
 os.environ.update({"FORCE_COLOR": "1", "TERM": "xterm-256color"})
 load_dotenv()
@@ -123,8 +124,15 @@ def initiate_executor(config, instances, version, db_client, version_description
 def initiate_task_configs(input_task):
     if input_task["task_type"] == "populated_lab_play":
         input_task["config"]["starting_inventory"] = LAB_PLAY_POPULATED_STARTING_INVENTORY
-    task_config = OpenEndedTaskConfig(**input_task["config"])
+        return ThroughputTask(**input_task["config"])
+    task_config = ThroughputTask(**input_task["config"])
     return task_config
+
+def initialise_starting_state(instance, task, reset_game_state):
+    # reset the game state but with the new inventory
+    task.setup(instance, reset_game_state)
+    return task
+
 
 def get_starting_state(instance, config, starting_scenario_folder, reset_game_state):
     # reset the game state but with the new inventory
@@ -308,29 +316,29 @@ async def main():
         # read in the input task
         with open(os.path.join(task_folder, f"{task_key}.json"), "r") as f:
             input_task = json.load(f)
-        task_config = initiate_task_configs(input_task)
-        task_config = get_starting_state(instances[0], task_config, starting_scenario_folder, zero_state)
+        task = initiate_task_configs(input_task)
+        task = initialise_starting_state(instances[0], task, zero_state)
         config_dict = {"iterations": search_iterations,
                    "executor_kwargs": executor.config._to_dict(),
-                   "task_config": task_config._to_dict()}
+                   "task_config": task._to_dict()}
         # save the config dict
         with open(os.path.join(save_path, f"{task_key}_config.json"), "w") as f:
             json.dump(config_dict, f)
-        print(f"Starting MCTS search for task {task_config.task}")
+        print(f"Starting MCTS search for task {task.task}")
         results = await executor.search_supervised(
         n_iterations=search_iterations,
         skip_failures=False,
-        task=task_config,
+        task=task,
         run_id = f"{task_key}_{dt_string}"
         )
-        print(f"Task: {task_config.task} has been completed")
+        print(f"Task: {task.task} has been completed")
         result_dict = {"results" :results,
-                       "starting_inventory": task_config.starting_inventory,
-                       "target_entity": task_config.throughput_entity,}
+                       "starting_inventory": task.starting_inventory,
+                       "target_entity": task.throughput_entity,}
         with open(os.path.join(save_path, f"{task_key}.json"), "w") as f:
             json.dump(result_dict, f)
-        plot_throughput_timeseries(result_dict, os.path.join(save_path, f"{task_key}_individual.png"), task_config)
-        plot_throughput_timeseries_mean(result_dict, os.path.join(save_path, f"{task_key}_mean.png"), task_config)
+        plot_throughput_timeseries(result_dict, os.path.join(save_path, f"{task_key}_individual.png"), task)
+        plot_throughput_timeseries_mean(result_dict, os.path.join(save_path, f"{task_key}_mean.png"), task)
     print("All tasks completed")
 
 

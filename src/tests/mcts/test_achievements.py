@@ -1091,8 +1091,33 @@ def test_achievements_44(): # DEMO
         output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
 
         print(f"asd")
+
+
+def test_achievements_45(): # DEMO
+        from search.model.game_state import GameState
+        PLACEMENT_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 10, "wooden-chest": 10, "burner-inserter": 10, "transport-belt": 200,
+                                "stone-furnace": 5, "pipe": 10, "boiler": 4, "offshore-pump": 3, "steam-engine": 2,
+                                "iron-gear-wheel": 22, "iron-plate": 19, "copper-plate": 52, "electronic-circuit": 99,
+                                "iron-ore": 62, "stone": 50, "electric-mining-drill": 10, "small-electric-pole": 200, "pipe": 100,
+                                "assembling-machine-1": 5}
+        instance = FactorioInstance(address='localhost',
+                                bounding_box=200,
+                                tcp_port=27015,
+                                fast=True,
+                                #cache_scripts=False,
+                                inventory=PLACEMENT_STARTING_INVENTORY) 
+
+        #test_string_1 = '\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\nsleep(5)\ninserter_to_furnace1 = place_entity_next_to(Prototype.StoneFurnace,reference_position=drill.drop_position, spacing=0)'
+        #test_string_1 = 'print(Prototype.BurnerMiningDrill.WIDTH)\nprint(Prototype.AssemblingMachine2.HEIGHT)\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\nbbox = BuildingBox(height = 2,width = 3)\ncoords = nearest_buildable(entity = Prototype.Boiler, building_box = bbox, center_position = drill.drop_position)\nfurn = place_entity(Prototype.Boiler, position = coords.left_top, direction = Direction.RIGHT)'
+        test_string_1 = '\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\nbbox = BuildingBox(width = Prototype.WoodenChest.WIDTH+1, height = Prototype.WoodenChest.HEIGHT+1)\nbuildable_coordinates = nearest_buildable(Prototype.WoodenChest, bbox, drill.drop_position)\nfurn = place_entity(Prototype.WoodenChest, position = buildable_coordinates.center)\nprint(buildable_coordinates.width())\nprint(buildable_coordinates.height())'
+        #test_string_1 = '\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\ninserter_to_furnace1 = place_entity_next_to(Prototype.WoodenChest,reference_position=drill.position, direction = drill.direction)'
+        output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+
+        print(f"asd")
+
+
 if __name__ == '__main__':
         
     #unittest.main()
-    test_achievements_44()
+    test_achievements_45()
     #test_achievements_38()

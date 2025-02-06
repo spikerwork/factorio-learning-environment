@@ -16,6 +16,8 @@ from search.model.conversation import Conversation, GenerationParameters, Messag
 from tenacity import retry, wait_exponential
 from search.mcts.planning_mcts import get_mining_setup
 import copy
+from lab_play_tasks.throughput_task import ThroughputTask
+
 logger = logging.basicConfig(level=logging.INFO)
 
 
@@ -49,7 +51,7 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
         
 
         self.beam_unification_steps = config.supervised_kwargs.get("beam_unification_steps", 0)
-    async def generate_plans(self, task: OpenEndedTaskConfig, 
+    async def generate_plans(self, task: ThroughputTask, 
                              nr_of_beams: int,
                              instances) -> List[InitialPlanOutput]:
         
@@ -81,7 +83,7 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
     
 
     async def _run_group_search(self, group: PlanningGroupV2, 
-                                task: OpenEndedTaskConfig, 
+                                task: ThroughputTask, 
                                 n_iterations: int, 
                                 skip_failures: bool = False,
                                 run_id: str = ""):
@@ -233,7 +235,7 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
 
     async def _process_group_step(self, group: PlanningGroupV2, step_idx: int, 
                                   skip_failures: bool, parent: Program,
-                                  task: OpenEndedTaskConfig) -> List[PlanOutput]:
+                                  task: ThroughputTask) -> List[PlanOutput]:
         """Process a single step for a group"""
         try:
             # Generate candidates
@@ -355,7 +357,7 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
                                  instance_id: int,
                                  parent_id: Optional[int],
                                  skip_failures: bool,
-                                 task: OpenEndedTaskConfig) -> PlanOutput:
+                                 task: ThroughputTask) -> PlanOutput:
         try:
             step_to_process = plan.steps[-1]
             if len(step_to_process.sampled_programs) == 0:
@@ -368,7 +370,7 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
                 raise Exception("Found error in response. Skipping step.")
             
             plan.steps[-1] = step_to_process
-            achievements = self.get_throughput(plan=plan, group=group)
+            task_success, achievements = self.self.evaluate_task(plan=plan, group=group)
             plan.steps[-1].program.meta["holdout_achievements"] = achievements
             throughput_entity = task.throughput_entity
             throughput = achievements["dynamic"].get(throughput_entity, 0)
@@ -385,14 +387,18 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
             return plan
     
 
-    def get_throughput(self, 
+    def evaluate_task(self, 
                             plan: PlanOutput,
-                            group: PlanningGroupV2) -> bool:
-        sleep_seconds = 60
+                            group: PlanningGroupV2,
+                            task: ThroughputTask) -> bool:
         instance_id = plan.meta["plan_id"]
         instance = group.evaluator.instances[instance_id]
         check_state = plan.steps[-1].end_state
         instance.reset(check_state)
-        result, achievements, post_production_flows = group.evaluator._evaluate_for_achievements(code = f"sleep({sleep_seconds})", instance=instance)
 
-        return achievements
+        task_success, achievements = task.verify(score=plan.steps[-1].program.value, 
+                                                 step=len(plan.steps), 
+                                                 instance=instance, 
+                                                 step_statistics=plan.steps[-1].program.meta["post_production_flows"])
+
+        return task_success, achievements
