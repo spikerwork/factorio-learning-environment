@@ -132,7 +132,9 @@ class FactorioNamespace:
         except Exception as e:
             print(f"Error restoring namespace: {e}")
             pass
-
+    def score(self):
+        return self.reward()
+    
     def _assign_target(self, target, value, eval_dict):
         """Helper function to handle different types of assignment targets"""
         if isinstance(target, ast.Name):
