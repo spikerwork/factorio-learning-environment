@@ -127,7 +127,7 @@ class ConnectEntities(Tool):
         )
 
     def _resolve_position_into_entity(self, position: Position):
-        entities = self.get_entities(position=position, radius=0.5)
+        entities = self.get_entities(position=position, radius=0)
         if not entities:
             return position
         if isinstance(entities[0], EntityGroup):
