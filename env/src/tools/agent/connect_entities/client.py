@@ -150,7 +150,7 @@ class ConnectEntities(Tool):
                 pass
 
         raise Exception(
-            f"Failed to connect {set([type.name for type in connection_types])} from {source} to {target}. "
+            f"Failed to connect {set([type.name for type in connection_types])} from {source.name} at {source.position} to {target.name} at {target.position}. "
             f"{self.get_error_message(str(last_exception))}"
         )
 

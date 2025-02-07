@@ -488,7 +488,8 @@ class FluidHandler(StaticEntity):
     fluid_systems: Optional[Union[dict, list]] = []
 
 class AdvancedAssemblingMachine(FluidHandler, AssemblingMachine):
-    pass
+    _height: float = 3
+    _width: float = 3
 
 
 class MultiFluidHandler(StaticEntity):
@@ -522,9 +523,11 @@ class Boiler(FluidHandler, BurnerType):
     _width: float = 3
 
 class Generator(FluidHandler, StaticEntity):
+    _height: float = 3
+    _width: float = 5
     pass
 
-class SteamEngine(Generator):
+class SteamEngine(FluidHandler, ElectricalProducer):
     _height: float = 3
     _width: float = 5
 
@@ -554,15 +557,11 @@ class Furnace(Entity, BurnerType):
     _width: float = 2
 
 
-class ElectricFurnace(Entity, Electric):
+class ElectricFurnace(Electric):
     furnace_source: Inventory = Inventory()
     furnace_result: Inventory = Inventory()
     _height: float = 3
     _width: float = 3
-
-class ElectricFurnace(Electric):
-    furnace_source: Inventory = Inventory()
-    furnace_result: Inventory = Inventory()
 
 class Chest(Entity):
     inventory: Inventory = Inventory()

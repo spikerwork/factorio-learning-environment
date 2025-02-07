@@ -368,7 +368,7 @@ move_to(target_position)
 print(f"AssemblingMachine1 width: {Prototype.AssemblingMachine1.WIDTH}, height: {Prototype.AssemblingMachine1.HEIGHT}") # width 3, height 3
 # use the prototype width and height attributes 
 # Need to add the 2 inserters to the width as we need to account for the inserter picking up items and putting to assembling machine
-building_box = BuildingBox(width = Prototype.AssemblingMachine1.WIDTH, height = Prototype.AssemblingMachine1.HEIGHT + 2*Prototype.BurnerInserter.HEIGHT)
+building_box = BuildingBox(width = Prototype.AssemblingMachine1.WIDTH + 2*Prototype.BurnerInserter.HEIGHT, height = Prototype.AssemblingMachine1.HEIGHT)
 # get the nearest buildable area around the target_position
 buildable_coordinates = nearest_buildable(Prototype.AssemblingMachine1, building_box, target_position)
 # use the center coordinate to put the target_machine as one inserter will be above and another below
@@ -627,8 +627,8 @@ left_top = buildable_coordinates.left_top
 move_to(left_top)
 for i in range(3):
     # we now iterate from the leftmost point towards the right
-    # take steps of 2 as drills have width of 2
-    drill_pos = Position(x=left_top.x + 2*i, y=left_top.y)
+    # take steps of drill.WIDTH
+    drill_pos = Position(x=left_top.x + Prototype.ElectricMiningDrill.WIDTH*i, y=left_top.y)
     # Place the drill facing down as we start from top coordinate
     drill = place_entity(Prototype.ElectricMiningDrill, position=drill_pos, direction = Direction.DOWN)
     print(f"Placed ElectricMiningDrill {i} at {drill.position} to mine copper ore")

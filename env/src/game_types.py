@@ -64,7 +64,6 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     ExpressUndergroundBelt = "express-underground-belt", UndergroundBelt
     FastUndergroundBelt = "fast-underground-belt", UndergroundBelt
     UndergroundBelt = "underground-belt", UndergroundBelt
-    ElectricFurnace = "electric-furnace", ElectricFurnace
     OffshorePump = "offshore-pump", OffshorePump
     PumpJack = "pumpjack", PumpJack
     Pump = "pump", Pump
@@ -72,8 +71,7 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     OilRefinery = "oil-refinery", OilRefinery
     ChemicalPlant = "chemical-plant", ChemicalPlant
 
-    Boiler = "boiler", Boiler
-    SteamEngine = "steam-engine", SteamEngine
+    SteamEngine = "steam-engine", Generator
     SolarPanel = "solar-panel", SolarPanel
 
     UndergroundPipe = "pipe-to-ground", Pipe
@@ -83,11 +81,6 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     IronChest = "iron-chest", Chest
     WoodenChest = "wooden-chest", Chest
     IronGearWheel = "iron-gear-wheel", Entity
-    Coal = "coal", None
-    Wood = "wood", None
-    IronPlate = "iron-plate", None
-    SteelPlate = "steel-plate", None
-    CopperPlate = "copper-plate", None
     StorageTank = "storage-tank", StorageTank
 
     SmallElectricPole = "small-electric-pole", ElectricityPole
@@ -100,12 +93,12 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     IronOre = "iron-ore", None
     CopperOre = "copper-ore", None
     Stone = "stone", None
+    Concrete = "concrete", None
 
-    IronPlate = "iron-plate", None  # Crafting requires smelting 1 iron ore, smelts for 0.5 seconds per ore
-    IronGearWheel = "iron-gear-wheel", None
+    IronPlate = "iron-plate", None  # Crafting requires smelting 1 iron ore
     IronStick = "iron-stick", None
-    SteelPlate = "steel-plate", None  # Crafting requires smelting 5 iron plates, smelts for 4 seconds per ore
-    CopperPlate = "copper-plate", None  # Crafting requires smelting 1 copper ore, smelts for 0.5 seconds per ore
+    SteelPlate = "steel-plate", None  # Crafting requires smelting 5 iron plates
+    CopperPlate = "copper-plate", None  # Crafting requires smelting 1 copper ore
     StoneBrick = "stone-brick", None
     CopperCable = "copper-cable", None
     PlasticBar = "plastic-bar", None

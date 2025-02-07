@@ -28,9 +28,9 @@ class ThroughputTask(TaskABC):
     
     def verify(self, score: float, step: int, instance: FactorioInstance, step_statistics: Dict) -> bool:
         
-        result, achievements, post_production_flows = eval_program_with_achievements(program = f"sleep({self.wait_period})", instance=instance)
+        result_list, result, error,  achievements = eval_program_with_achievements(program = f"sleep({self.wait_period})", instance=instance)
         dynamic_achievements = achievements["dynamic"]
-        return dynamic_achievements.get(self.throughput_entity.name, 0) >= self.quota, achievements
+        return dynamic_achievements.get(self.throughput_entity, 0) >= self.quota, achievements
             
     def _to_dict(self) -> Dict[str, Any]:
         return {
