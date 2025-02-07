@@ -7,10 +7,10 @@ from eval.open.model.game_state import GameState
 import copy
 
 LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 10, "wooden-chest": 10, "burner-inserter": 10, "transport-belt": 500,
-                                "stone-furnace": 10, "pipe": 10, "boiler": 4, "offshore-pump": 3, "steam-engine": 2,
+                                "stone-furnace": 10, "boiler": 4, "offshore-pump": 3, "steam-engine": 2,
                                 "iron-gear-wheel": 22, "iron-plate": 19, "copper-plate": 52, "electronic-circuit": 99,
                                 "iron-ore": 62, "stone": 50, "electric-mining-drill": 10, "small-electric-pole": 500, "pipe": 100,
-                                "assembling-machine-1": 5}
+                                "assembling-machine-1": 5, "electric-furnace": 10}
 
 
 
