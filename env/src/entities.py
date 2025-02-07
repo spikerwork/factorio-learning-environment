@@ -419,6 +419,9 @@ class TransportBelt(Entity):
 class Electric(BaseModel):
     electrical_id: Optional[int] = None
 
+class ElectricalProducer(Electric):
+    power_production: Optional[float] = 0
+
 class EnergySource(BaseModel):
     buffer_capacity: str
     input_flow_limit: str
@@ -484,6 +487,10 @@ class FluidHandler(StaticEntity):
     fluid_box: Optional[Union[dict, list]] = []
     fluid_systems: Optional[Union[dict, list]] = []
 
+class AdvancedAssemblingMachine(FluidHandler, AssemblingMachine):
+    pass
+
+
 class MultiFluidHandler(StaticEntity):
     input_connection_points: List[Position] = []
     output_connection_points: List[Position] = []
@@ -505,17 +512,26 @@ class PumpJack(MiningDrill, FluidHandler, Electric):
     _width: float = 3
     pass
 
+class SolarPanel(ElectricalProducer):
+    _height: float = 3
+    _width: float = 3
+
 class Boiler(FluidHandler, BurnerType):
     steam_output_point: Optional[Position] = None
     _height: float = 2
     _width: float = 3
 
-class Generator(FluidHandler, Electric):
+class Generator(FluidHandler, StaticEntity):
     pass
 
 class SteamEngine(Generator):
     _height: float = 3
     _width: float = 5
+
+class Pump(FluidHandler, Electric):
+    _height: float = 1
+    _width: float = 2
+    pass
 
 class OffshorePump(FluidHandler):
     _height: float = 1
@@ -544,10 +560,19 @@ class ElectricFurnace(Entity, Electric):
     _height: float = 3
     _width: float = 3
 
+class ElectricFurnace(Electric):
+    furnace_source: Inventory = Inventory()
+    furnace_result: Inventory = Inventory()
+
 class Chest(Entity):
     inventory: Inventory = Inventory()
     _height: float = 1
     _width: float = 1
+
+class StorageTank(Entity):
+    inventory: Inventory = Inventory()
+    _height: float = 3
+    _width: float = 3
 
 class Lab(Entity, Electric):
     lab_input: Inventory = Inventory()

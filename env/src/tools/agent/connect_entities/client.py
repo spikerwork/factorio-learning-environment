@@ -85,7 +85,11 @@ class ConnectEntities(Tool):
         if not waypoints:
             for arg in args:
                 if isinstance(arg, Prototype):
+<<<<<<< HEAD
                     connection_types = { arg } 
+=======
+                    connection_types = { arg }
+>>>>>>> refactor/actions
                 elif self.is_set_of_prototype(arg):
                     connection_types = arg
                 else:
