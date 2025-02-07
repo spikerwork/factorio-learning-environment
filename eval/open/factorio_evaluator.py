@@ -186,12 +186,12 @@ class FactorioEvaluator:
 
             entities = instance.namespace.get_entities()
             final_inventory = instance.namespace.inspect_inventory()
-
+            error = "error" in result.lower()
             # Check to see if the inventories are different
             # If so, we manually put a hint in the generated code and result from the game
             get_inventory_code = 'print(f"Current inventory {inspect_inventory()}")'
             if (start_inventory.__dict__ != final_inventory.__dict__
-                    and 'error' not in result.lower()
+                    and not error
                     and get_inventory_code not in program.code
                     and 'inspect_inventory()' not in program.code):
                 program.code += f'\n{get_inventory_code}'
@@ -200,7 +200,7 @@ class FactorioEvaluator:
             # Check to see if the entities are different
             # If so, we put a hint in the code and result
             get_entities_code = 'print(f"Entities on the map: {get_entities()}")'
-            if (start_entities != entities and 'error' not in result.lower()
+            if (start_entities != entities and not error
                     and get_entities_code not in program.code
                     and 'get_entities()' not in program.code):
                 program.code += f'\n{get_entities_code}\n'
@@ -208,7 +208,7 @@ class FactorioEvaluator:
 
             result = result.rstrip()+"\n"
 
-            if "error" in result.lower():
+            if error:
                 result += f'(\'Current inventory: {final_inventory}\',)\n'
                 result += f'(\'Entities on the map after the current step: {entities}\',)'
 
@@ -245,7 +245,7 @@ class FactorioEvaluator:
                     error_count=instance_metrics.error_count + 1
                 )
 
-            return final_reward, state, result, entities, achievements, ticks
+            return final_reward, state, result, entities, achievements, ticks, error
 
         except Exception as e:
             print(f"Error in _evaluate_single:")

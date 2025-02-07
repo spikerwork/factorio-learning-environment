@@ -29,7 +29,8 @@ from models.research_state import ResearchState
 from rcon.factorio_rcon import RCONClient
 from eval.open.model.game_state import GameState
 from utils.controller_loader.system_prompt_generator import SystemPromptGenerator
-
+# import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 CHUNK_SIZE = 32
 MAX_SAMPLES = 5000
 
@@ -265,8 +266,8 @@ class FactorioInstance:
                 # Handle special case renames
                 if tool_name == "place_entity":
                     class_name = "PlaceObject"
-                if tool_name == "score":
-                    class_name = "Reward"
+                #if tool_name == "score":
+                #    class_name = "Reward"
 
                 try:
                     # Get and instantiate the controller class

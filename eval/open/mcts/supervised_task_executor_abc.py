@@ -65,7 +65,6 @@ class SupervisedTaskExecutorABC(ABC):
         self.logger = GroupedFactorioLogger(
             n_groups=config.n_parallel,
             instances_per_group=instances_per_group,
-            holdout_exists=False
 
         )
         self.logger.start()
@@ -104,7 +103,6 @@ class SupervisedTaskExecutorABC(ABC):
                 instances=group_instances,
                 value_accrual_time=3,
                 logger=self.logger,
-                include_holdout=False
             )
 
             groups.append(PlanningGroupV2(

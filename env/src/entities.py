@@ -433,12 +433,15 @@ class Accumulator(StaticEntity, Electric):
 class Inserter(StaticEntity, Electric):
     pickup_position: Optional[Position] = None
     drop_position: Position
+    _width: float = 1
+    _height: float = 1
 
 class UndergroundBelt(TransportBelt):
     is_input: bool
     connected_to: Optional[int] = None
     _height: float = 1
     _width: float = 1
+
 class MiningDrill(StaticEntity):
     drop_position: Position
     resources: List[Ingredient]
@@ -510,6 +513,9 @@ class Boiler(FluidHandler, BurnerType):
 class Generator(FluidHandler, Electric):
     pass
 
+class SteamEngine(Generator):
+    _height: float = 3
+    _width: float = 5
 
 class OffshorePump(FluidHandler):
     _height: float = 1
@@ -530,6 +536,13 @@ class Furnace(Entity, BurnerType):
     furnace_result: Inventory = Inventory()
     _height: float = 2
     _width: float = 2
+
+
+class ElectricFurnace(Entity, Electric):
+    furnace_source: Inventory = Inventory()
+    furnace_result: Inventory = Inventory()
+    _height: float = 3
+    _width: float = 3
 
 class Chest(Entity):
     inventory: Inventory = Inventory()

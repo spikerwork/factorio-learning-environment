@@ -68,14 +68,14 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     ExpressUndergroundBelt = "express-underground-belt", UndergroundBelt
     FastUndergroundBelt = "fast-underground-belt", UndergroundBelt
     UndergroundBelt = "underground-belt", UndergroundBelt
-
+    ElectricFurnace = "electric-furnace", ElectricFurnace
     OffshorePump = "offshore-pump", OffshorePump
     PumpJack = "pumpjack", PumpJack
     OilRefinery = "oil-refinery", OilRefinery
     ChemicalPlant = "chemical-plant", ChemicalPlant
 
     Boiler = "boiler", Boiler
-    SteamEngine = "steam-engine", Generator
+    SteamEngine = "steam-engine", SteamEngine
 
     UndergroundPipe = "pipe-to-ground", Pipe
     Pipe = "pipe", Pipe
@@ -85,9 +85,9 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     IronGearWheel = "iron-gear-wheel", Entity
     Coal = "coal", None
     Wood = "wood", None
-    IronPlate = "iron-plate", None # Crafting requires smelting 1 iron ore, smelts for 0.5 seconds per ore
-    SteelPlate = "steel-plate", None # Crafting requires smelting 5 iron plates, smelts for 4 seconds per ore
-    CopperPlate = "copper-plate", None # Crafting requires smelting 1 copper ore, smelts for 0.5 seconds per ore
+    IronPlate = "iron-plate", None # Crafting requires smelting 1 iron ore
+    SteelPlate = "steel-plate", None # Crafting requires smelting 5 iron plates
+    CopperPlate = "copper-plate", None # Crafting requires smelting 1 copper ore
     SmallElectricPole = "small-electric-pole", ElectricityPole
     MediumElectricPole = "medium-electric-pole", ElectricityPole
     BigElectricPole = "big-electric-pole", ElectricityPole

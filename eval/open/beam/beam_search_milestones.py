@@ -92,7 +92,7 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
                 
                 saved_step_ids = []
                 output_dicts = {}
-                for step_idx in range(task.trace_length):
+                for step_idx in range(task.maximum_steps):
                     if step_idx == 0:
                         group.plans = await self.generate_plans(task, 
                                                                 nr_of_beams=len(group.active_instances),
@@ -365,7 +365,7 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
                 raise Exception("Found error in response. Skipping step.")
             
             plan.steps[-1] = step_to_process
-            task_success, achievements = self.self.evaluate_task(plan=plan, group=group)
+            task_success, achievements = self.evaluate_task(plan=plan, group=group, task=task)
             plan.steps[-1].program.meta["holdout_achievements"] = achievements
             throughput_entity = task.throughput_entity
             throughput = achievements["dynamic"].get(throughput_entity, 0)

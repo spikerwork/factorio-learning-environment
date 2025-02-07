@@ -17,7 +17,7 @@ LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 10,
 class ThroughputTask(TaskABC):
     def __init__(self, maximum_steps, starting_inventory: Union[Inventory, Dict], task: str,
                   throughput_entity: Entity, quota: int, wait_period: int, starting_setup_code_location: str = None):
-        super().__init__(maximum_steps, starting_inventory)
+        super().__init__(maximum_steps, starting_inventory, task=task)
         self.throughput_entity = throughput_entity
         self.quota = quota
         self.wait_period = wait_period
@@ -28,7 +28,7 @@ class ThroughputTask(TaskABC):
     
     def verify(self, score: float, step: int, instance: FactorioInstance, step_statistics: Dict) -> bool:
         
-        result, achievements, post_production_flows = eval_program_with_achievements(code = f"sleep({self.wait_period})", instance=instance)
+        result, achievements, post_production_flows = eval_program_with_achievements(program = f"sleep({self.wait_period})", instance=instance)
         dynamic_achievements = achievements["dynamic"]
         return dynamic_achievements.get(self.throughput_entity.name, 0) >= self.quota, achievements
             
@@ -55,6 +55,7 @@ class ThroughputTask(TaskABC):
         if self.starting_setup_code_location is None:
             starting_game_state = GameState.from_instance(instance)
             self.starting_game_state = starting_game_state
+            return
         # read in the starting code
         with open(self.starting_setup_code_location, "r") as f:
             starting_code = f.read()
