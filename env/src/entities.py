@@ -620,6 +620,9 @@ class BeltGroup(EntityGroup):
         belt_summary = f"[{len(self.belts)} belts]"
         return f"\n\tBeltGroup(inputs={self.inputs}, outputs={self.outputs}, inventory={self.inventory}, status={self.status}, belts={belt_summary})"
 
+    def __str__(self):
+        return self.__repr__()
+    
 class PipeGroup(EntityGroup):
     pipes: List[Pipe]
     name: str = 'pipe-group'
@@ -636,6 +639,9 @@ class PipeGroup(EntityGroup):
 
         return f"\n\tPipeGroup(fluid_system={self.id}, {fluid_suffix}position={self.position}, status={self.status}, pipes={pipe_summary})"
 
+    def __str__(self):
+        return self.__repr__()
+    
 class ElectricityGroup(EntityGroup):
     name: str = 'electricity-group'
     poles: List[ElectricityPole]
@@ -650,3 +656,5 @@ class ElectricityGroup(EntityGroup):
 
     def __hash__(self):
         return self.name+str(self.id)
+    def __str__(self):
+        return self.__repr__()
