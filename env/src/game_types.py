@@ -13,11 +13,38 @@ class ResourceName(enum.Enum):
     CrudeOil = "crude-oil"
     UraniumOre = "uranium-ore"
 
+class RecipeName(enum.Enum):
+    NuclearFuelReprocessing = "nuclear-fuel-reprocessing"
+    UraniumProcessing = "uranium-processing"
+    SulfuricAcid = "sulfuric-acid"
+    BasicOilProcessing = "basic-oil-processing"
+    AdvancedOilProcessing = "advanced-oil-processing"
+    CoalLiquefaction = "coal-liquefaction"
+    HeavyOilCracking = "heavy-oil-cracking"
+    LightOilCracking = "light-oil-cracking"
+
+    FillCrudeOilBarrel = "fill-crude-oil-barrel"
+    FillHeavyOilBarrel = "fill-heavy-oil-barrel"
+    FillLightOilBarrel = "fill-light-oil-barrel"
+    FillLubricantBarrel = "fill-lubricant-barrel"
+    FillPetroleumGasBarrel = "fill-petroleum-gas-barrel"
+    FillSulfuricAcidBarrel = "fill-sulfuric-acid-barrel"
+    FillWaterBarrel = "fill-water-barrel"
+
+    EmptyCrudeOilBarrel = "empty-crude-oil-barrel"
+    EmptyHeavyOilBarrel = "empty-heavy-oil-barrel"
+    EmptyLightOilBarrel = "empty-light-oil-barrel"
+    EmptyLubricantBarrel = "empty-lubricant-barrel"
+    EmptyPetroleumGasBarrel = "empty-petroleum-gas-barrel"
+    EmptySulfuricAcidBarrel = "empty-sulfuric-acid-barrel"
+    EmptyWaterBarrel = "empty-water-barrel"
+
 
 class PrototypeMetaclass(enum.EnumMeta):
     def __getattr__(cls, name):
         try:
-            return super().__getattr__(name)
+            attr =  super().__getattr__(name)
+            return attr
         except AttributeError:
             # Get all valid prototype names
             valid_names = [member.name for member in cls]
@@ -36,16 +63,19 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     AssemblingMachine1 = "assembling-machine-1", AssemblingMachine
     AssemblingMachine2 = "assembling-machine-2", AdvancedAssemblingMachine
     AssemblingMachine3 = "assembling-machine-3", AdvancedAssemblingMachine
+    Centrifuge = "centrifuge", AssemblingMachine
 
     BurnerInserter = "burner-inserter", BurnerInserter
-    Inserter = "inserter", Inserter
     FastInserter = "fast-inserter", Inserter
     ExpressInserter = "express-inserter", Inserter
 
-    LongHandedInserter = "long-handed-inserter", Inserter #TODO
-    StackInserter = "stack-inserter", Inserter #TODO
-    StackFilterInserter = "stack-filter-inserter", Inserter #TODO
-    FilterInserter = "filter-inserter", Inserter #TODO
+    LongHandedInserter = "long-handed-inserter", Inserter  # TODO
+    StackInserter = "stack-inserter", Inserter  # TODO
+    StackFilterInserter = "stack-filter-inserter", Inserter  # TODO
+    FilterInserter = "filter-inserter", Inserter  # TODO
+
+    Inserter = "inserter", Inserter
+
 
     BurnerMiningDrill = "burner-mining-drill", BurnerMiningDrill
     ElectricMiningDrill = "electric-mining-drill", ElectricMiningDrill
@@ -75,6 +105,7 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     SolarPanel = "solar-panel", SolarPanel
 
     UndergroundPipe = "pipe-to-ground", Pipe
+    HeatPipe = 'heat-pipe', Pipe
     Pipe = "pipe", Pipe
 
     SteelChest = "steel-chest", Chest
@@ -94,6 +125,7 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     CopperOre = "copper-ore", None
     Stone = "stone", None
     Concrete = "concrete", None
+    UraniumOre = "uranium-ore", None
 
     IronPlate = "iron-plate", None  # Crafting requires smelting 1 iron ore
     IronStick = "iron-stick", None
@@ -105,6 +137,8 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     EmptyBarrel = "empty-barrel", None
     Battery = "battery", None
     SulfuricAcid = "sulfuric-acid", None
+    Uranium235 = "uranium-235", None
+    Uranium238 = "uranium-238", None
 
     Lubricant = "lubricant", None
     AdvancedOilProcessing = "advanced-oil-processing", None # These are recipes, not prototypes.
@@ -129,11 +163,24 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     Gate = "gate", Entity
     SmallLamp = "small-lamp", Entity
 
+    NuclearReactor = "nuclear-reactor", Reactor
+    UraniumFuelCell = "uranium-fuel-cell", None
+    HeatExchanger = 'heat-exchanger', HeatExchanger
+
     AutomationSciencePack = "automation-science-pack", None
     MilitarySciencePack = "military-science-pack", None
     ProductionSciencePack = "production-science-pack", None
     UtilitySciencePack = "utility-science-pack", None
     ChemicalSciencePack = "chemical-science-pack", None
+
+    RocketSilo = "rocket-silo", RocketSilo
+    Rocket = "rocket", Rocket
+    Satellite = "satellite", None
+    RocketPart = "rocket-part", None
+    RocketControlUnit = "rocket-control-unit", None
+    LowDensityStructure = "low-density-structure", None
+    RocketFuel = "rocket-fuel", None
+    SpaceSciencePack = "space-science-pack", None
 
     BeltGroup = "belt-group", BeltGroup
     PipeGroup = "pipe-group", PipeGroup
@@ -170,8 +217,8 @@ class Technology(enum.Enum):
 
     # Circuit technologies
     # CircuitNetwork = "circuit-network"
-    # AdvancedElectronics = "advanced-electronics"
-    # AdvancedElectronics2 = "advanced-electronics-2"
+    AdvancedElectronics = "advanced-electronics"
+    AdvancedElectronics2 = "advanced-electronics-2"
 
     # Power technologies
     Electronics = "electronics"
@@ -181,7 +228,7 @@ class Technology(enum.Enum):
     ElectricEngineering = "electric-engine"
     BatteryTechnology = "battery"
     # AdvancedBattery = "battery-mk2-equipment"
-    # NuclearPower = "nuclear-power"
+    NuclearPower = "nuclear-power"
 
     # Mining technologies
     SteelProcessing = "steel-processing"
@@ -246,7 +293,7 @@ class Technology(enum.Enum):
     ChemicalSciencePack = "chemical-science-pack"
     ProductionSciencePack = "production-science-pack"
     # UtilitySciencePack = "utility-science-pack"
-    # SpaceSciencePack = "space-science-pack"
+    #SpaceSciencePack = "space-science-pack"
 
     # Inserter technologies
     FastInserter = "fast-inserter"
@@ -265,7 +312,7 @@ class Technology(enum.Enum):
     # SpiderVehicle = "spidertron"
 
     # Weapon technologies
-    # Grenades = "grenades"
+    Grenades = "grenades"
     # ClusterGrenades = "cluster-grenades"
     # RocketLauncher = "rocketry"
     # ExplosiveRocketry = "explosive-rocketry"
@@ -282,11 +329,11 @@ class Technology(enum.Enum):
     # BrakinPower = "braking-force"
 
     # # Endgame technologies
-    # SpaceScience = "space-science-pack"
-    # RocketFuel = "rocket-fuel"
-    # RocketControl = "rocket-control-unit"
-    # LowDensityStructure = "low-density-structure"
-    # RocketSiloTechnology = "rocket-silo"
+    SpaceScience = "space-science-pack"
+    RocketFuel = "rocket-fuel"
+    RocketControl = "rocket-control-unit"
+    LowDensityStructure = "low-density-structure"
+    RocketSiloTechnology = "rocket-silo"
 
 
 # Helper dictionary to look up technology by name string

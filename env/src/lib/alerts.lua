@@ -44,6 +44,10 @@ end
 function is_full(entity)
     -- Map inventory types to string names
     local inventory_names = {
+        [defines.inventory.rocket_silo_rocket] = "rocket",
+        [defines.inventory.rocket_silo_input] = "rocket input",
+        [defines.inventory.rocket_silo_output] = "rocket output",
+        [defines.inventory.rocket_silo_modules] = "rocket modules",
         [defines.inventory.fuel] = "fuel source",
         [defines.inventory.burnt_result] = "burnt result",
         [defines.inventory.assembling_machine_input] = "assembling machine input",
@@ -82,6 +86,16 @@ function is_full(entity)
                     inventory_name = "assembler input"
                 elseif inventory_id == defines.inventory.assembling_machine_output then
                     inventory_name = "assembler output"
+                end
+            elseif entity.type == "rocket-silo" then
+                if inventory_id == defines.inventory.rocket_silo_input then
+                    inventory_name = "rocket silo input"
+                elseif inventory_id == defines.inventory.rocket_silo_output then
+                    inventory_name = "rocket silo output"
+                elseif inventory_id == defines.inventory.rocket_silo_modules then
+                    inventory_name = "rocket silo modules"
+                elseif inventory_id == defines.inventory.rocket then
+                    inventory_name = "rocket"
                 end
             elseif entity.type == "mining-drill" then
                 if inventory_id == defines.inventory.chest then
@@ -314,7 +328,7 @@ function get_issues(entity)
     end
 
     if not has_electricity(entity) then
-        if entity.electric_network_id then
+        if entity.electric_network_id and (entity.type ~= 'solar-panel' and entity.type ~= 'generator') then
             table.insert(issues, "\'not receiving electricity\'")
         else
             table.insert(issues, "\'not connected to power network\'")

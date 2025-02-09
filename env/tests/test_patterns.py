@@ -1377,8 +1377,44 @@ def create_general_items(): # DEMO
                 print(result)
 
         print(f"asd")
+
+
+
+def test_solar_panels(): # DEMO
+        from eval.open.model.game_state import GameState
+        from env.src.game_types import Prototype, Resource, Direction, Position, BuildingBox   
+        
+        LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 10, "wooden-chest": 10, "burner-inserter": 10, "transport-belt": 500,
+                                "stone-furnace": 10, "boiler": 4, "offshore-pump": 3, "steam-engine": 2,
+                                "iron-gear-wheel": 22, "iron-plate": 19, "copper-plate": 52, "electronic-circuit": 99,
+                                "iron-ore": 62, "stone": 50, "electric-mining-drill": 10, "small-electric-pole": 500, "pipe": 100,
+                                "assembling-machine-1": 5, "electric-furnace": 10, "assembling-machine-2": 5, "solar-panel": 100}
+        
+        instance = FactorioInstance(address='localhost',
+                                bounding_box=200,
+                                tcp_port=27015,
+                                fast=True,
+                                #cache_scripts=False,
+                                inventory=LAB_PLAY_POPULATED_STARTING_INVENTORY) 
+
+        #test_string_1 = '\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\nsleep(5)\ninserter_to_furnace1 = place_entity_next_to(Prototype.StoneFurnace,reference_position=drill.drop_position, spacing=0)'
+        #test_string_1 = 'print(Prototype.BurnerMiningDrill.WIDTH)\nprint(Prototype.AssemblingMachine2.HEIGHT)\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\nbbox = BuildingBox(height = 2,width = 3)\ncoords = nearest_buildable(entity = Prototype.Boiler, building_box = bbox, center_position = drill.drop_position)\nfurn = place_entity(Prototype.Boiler, position = coords.left_top, direction = Direction.RIGHT)'
+        test_string_1 = 'power_position = Position(x = 0, y = 10)\nmove_to(power_position)\npanel = place_entity(Prototype.SolarPanel, Direction.UP, power_position)\nass_pos_1 = Position(x = 0, y = 0)\nass_pos_2 = Position(x = -10, y = 0)\nass_pos_3 = Position(x = 10, y = 0)\nmove_to(ass_pos_1)\nass_machine_1 = place_entity(Prototype.AssemblingMachine1, Direction.UP, ass_pos_1)\nmove_to(ass_pos_2)\nass_machine_2 = place_entity(Prototype.AssemblingMachine1, Direction.UP, ass_pos_2)\nmove_to(ass_pos_3)\nass_machine_3 = place_entity(Prototype.AssemblingMachine1, Direction.UP, ass_pos_3)\ngroup = connect_entities(ass_machine_1, panel, Prototype.SmallElectricPole)\ngroup = connect_entities(ass_machine_2, panel, Prototype.SmallElectricPole)\ngroup = connect_entities(ass_machine_3, panel, Prototype.SmallElectricPole)\nsleep(2)\nass_machine_1 = get_entity(Prototype.AssemblingMachine1, ass_pos_1)\nassert ass_machine_1.energy > 0, f"No power for ass machine 1"\nass_machine_2 = get_entity(Prototype.AssemblingMachine1, ass_pos_2)\nassert ass_machine_2.energy > 0, f"No power for ass machine 2"\nass_machine_3 = get_entity(Prototype.AssemblingMachine1, ass_pos_3)\nassert ass_machine_3.energy > 0, f"No power for ass machine 3"'
+        #output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        #print(result)
+        instance.reset()
+
+        test_string_1 = 'power_position = Position(x = 0, y = 10)\nmove_to(power_position)\npanel = place_entity(Prototype.SolarPanel, Direction.UP, power_position)\nass_pos_1 = Position(x = 0, y = 0)\nass_pos_2 = Position(x = -10, y = 0)\nass_pos_3 = Position(x = 10, y = 0)\nmove_to(ass_pos_1)\nass_machine_1 = place_entity(Prototype.AssemblingMachine1, Direction.UP, ass_pos_1)\nmove_to(ass_pos_2)\nass_machine_2 = place_entity(Prototype.AssemblingMachine1, Direction.UP, ass_pos_2)\nmove_to(ass_pos_3)\nass_machine_3 = place_entity(Prototype.AssemblingMachine1, Direction.UP, ass_pos_3)\ngroup = connect_entities(ass_machine_1, panel, Prototype.SmallElectricPole)\ngroup = connect_entities(ass_machine_2, group, Prototype.SmallElectricPole)\ngroup = connect_entities(ass_machine_3, group, Prototype.SmallElectricPole)\nsleep(2)\nass_machine_1 = get_entity(Prototype.AssemblingMachine1, ass_pos_1)\nassert ass_machine_1.energy > 0, f"No power for ass machine 1"\nass_machine_2 = get_entity(Prototype.AssemblingMachine1, ass_pos_2)\nassert ass_machine_2.energy > 0, f"No power for ass machine 2"\nass_machine_3 = get_entity(Prototype.AssemblingMachine1, ass_pos_3)\nassert ass_machine_3.energy > 0, f"No power for ass machine 3"\nprint(get_entities())'
+        #output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        #print(result)
+
+        instance.reset()
+
+        test_string_1 = 'power_position = Position(x = 0, y = 10)\nmove_to(power_position)\npanel = place_entity(Prototype.SolarPanel, Direction.UP, power_position)\nass_pos_1 = Position(x = 0, y = 0)\nass_pos_2 = Position(x = -10, y = 0)\nass_pos_3 = Position(x = 10, y = 0)\nmove_to(ass_pos_1)\nass_machine_1 = place_entity(Prototype.AssemblingMachine1, Direction.UP, ass_pos_1)\nmove_to(ass_pos_2)\nass_machine_2 = place_entity(Prototype.AssemblingMachine1, Direction.UP, ass_pos_2)\nmove_to(ass_pos_3)\nass_machine_3 = place_entity(Prototype.AssemblingMachine1, Direction.UP, ass_pos_3)\ngroup = connect_entities(ass_machine_1, ass_machine_2, ass_machine_3, panel, Prototype.SmallElectricPole)\nsleep(2)\nass_machine_1 = get_entity(Prototype.AssemblingMachine1, ass_pos_1)\nassert ass_machine_1.energy > 0, f"No power for ass machine 1"\nass_machine_2 = get_entity(Prototype.AssemblingMachine1, ass_pos_2)\nassert ass_machine_2.energy > 0, f"No power for ass machine 2"\nass_machine_3 = get_entity(Prototype.AssemblingMachine1, ass_pos_3)\nassert ass_machine_3.energy > 0, f"No power for ass machine 3"\nprint(get_entities())'
+        output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        print(result)
 if __name__ == '__main__':
         
     #unittest.main()
-    create_general_items()
+    test_solar_panels()
     #test_achievements_38()
