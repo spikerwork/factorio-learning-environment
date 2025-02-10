@@ -60,12 +60,6 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
             inventory = instance.namespace.inspect_inventory()
             dummy_program_code = "print(f'Inventory: {inspect_inventory()}')\nprint(f'Entities: {get_entities()}')\n"
             output = f"('Inventory: {inventory}')\n('Entities on the map: {entities}')"
-<<<<<<< HEAD
-            if task.starting_scenario_logs:
-                output = f"{task.starting_scenario_logs}\n{output}"
-                dummy_program_code = f"{task.starting_scenario_code}\n{dummy_program_code}"
-=======
->>>>>>> main
             first_dummy_program = Program(code=dummy_program_code, 
                                                               conversation=Conversation(messages=[]),
                                                               response=output,

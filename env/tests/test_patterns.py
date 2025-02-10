@@ -1455,24 +1455,29 @@ def create_liquid_items(): # DEMO
         from eval.open.model.game_state import GameState
         from env.src.game_types import Prototype, Resource, Direction, Position, BuildingBox   
         tests = [
-                {"solid_inputs": [("iron-ore", "Prototype.IronOre"), 
-                            ("stone-brick", "Prototype.StoneBrick")],
-                "liquid_input": ("water", "Prototype.Water"),
-                 "output": ("concrete", "Prototype.Concrete")},
+                #{"solid_inputs": [("iron-ore", "Prototype.IronOre"), 
+                #            ("stone-brick", "Prototype.StoneBrick")],
+                #"liquid_input": ("water", "Prototype.Water"),
+                # "output": ("concrete", "Prototype.Concrete")},
                 
-                {"solid_inputs": [("solid-fuel", "Prototype.SolidFuel")],
-                "liquid_input": ("light-oil", "Prototype.LightOil"),
-                 "output": ("rocket-fuel", "Prototype.RocketFuel")},
+                #{"solid_inputs": [("solid-fuel", "Prototype.SolidFuel")],
+                #"liquid_input": ("light-oil", "Prototype.LightOil"),
+                # "output": ("rocket-fuel", "Prototype.RocketFuel")},
 
-                {"solid_inputs": [("advanced-circuit", "Prototype.AdvancedCircuit"), 
-                            ("electronic-circuit", "Prototype.ElectronicCircuit")],
-                "liquid_input": ("sulfuric-acid", "Prototype.SulfuricAcid"),
-                 "output": ("processing-unit", "Prototype.ProcessingUnit")},
+                #{"solid_inputs": [("advanced-circuit", "Prototype.AdvancedCircuit"), 
+                #            ("electronic-circuit", "Prototype.ElectronicCircuit")],
+                #"liquid_input": ("sulfuric-acid", "Prototype.SulfuricAcid"),
+                # "output": ("processing-unit", "Prototype.ProcessingUnit")},
                 
-                {"solid_inputs": [("electronic-circuit", "Prototype.ElectronicCircuit"),
-                            ("engine-unit", "Prototype.EngineUnit")],
-                "liquid_input": ("lubricant", "Prototype.Lubricant"),
-                 "output": ("electric-engine-unit", "Prototype.ElectricEngineUnit")},
+                #{"solid_inputs": [("electronic-circuit", "Prototype.ElectronicCircuit"),
+                #            ("engine-unit", "Prototype.EngineUnit")],
+                #"liquid_input": ("lubricant", "Prototype.Lubricant"),
+                # "output": ("electric-engine-unit", "Prototype.ElectricEngineUnit")},
+#
+                # {"solid_inputs": [("electronic-circuit", "Prototype.ElectronicCircuit"),
+                #            ("engine-unit", "Prototype.EngineUnit")],
+                #"liquid_input": ("lubricant", "Prototype.Lubricant"),
+                # "output": ("electric-engine-unit", "Prototype.ElectricEngineUnit")},
                 
                  {"solid_inputs": [("copper-plate", "Prototype.CopperPlate"), 
                             ("iron-plate", "Prototype.IronPlate")],
@@ -1524,8 +1529,8 @@ def create_liquid_items(): # DEMO
         
         for test in tests:
                 fluid = test["liquid_input"][0]
-                command = f'/c game.surfaces[1].find_entity("storage-tank", -37,-6.5).fluidbox[1] = {{ name = "{fluid}", amount = 25000 }}'
-                instance.instance.rcon_client.send_command(command)
+                command = f'/c game.surfaces[1].find_entity("storage-tank", {{-37,-6.5}}).fluidbox[1] = {{ name = "{fluid}", amount = 25000 }}'
+                instance.rcon_client.send_command(command)
 
                 ingredient_list = [x[1] for x in test["solid_inputs"]]
                 ingredient_list = str(ingredient_list)
@@ -1539,6 +1544,32 @@ def create_liquid_items(): # DEMO
         print(f"asd")
 
 
+def test_rotation(): # DEMO
+        from eval.open.model.game_state import GameState
+        from env.src.game_types import Prototype, Resource, Direction, Position, BuildingBox   
+        
+        LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 10, "wooden-chest": 10, "burner-inserter": 10, "transport-belt": 500,
+                                "stone-furnace": 10, "boiler": 4, "offshore-pump": 3, "steam-engine": 2,
+                                "iron-gear-wheel": 22, "iron-plate": 19, "copper-plate": 52, "electronic-circuit": 99,
+                                "iron-ore": 62, "stone": 50, "electric-mining-drill": 10, "small-electric-pole": 500, "pipe": 100,
+                                "assembling-machine-1": 5, "electric-furnace": 10, "assembling-machine-2": 5, "storage-tank": 8}
+        
+        instance = FactorioInstance(address='localhost',
+                                bounding_box=200,
+                                tcp_port=27015,
+                                fast=True,
+                                #cache_scripts=False,
+                                inventory=LAB_PLAY_POPULATED_STARTING_INVENTORY) 
+
+
+        test_string_1 = 'assembly_pos = Position(x = -37, y = -16.5)\nmove_to(assembly_pos)\nass_machine = place_entity(Prototype.AssemblingMachine2, position=assembly_pos, direction = Direction.UP)\nset_entity_recipe(entity = ass_machine, prototype = Prototype.CopperPlate)\nprint(ass_machine.recipe)\nass_machine = rotate_entity(ass_machine, Direction.LEFT)\nprint(ass_machine.direction)'
+        output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        print(result)
+
+        game_state = GameState.from_instance(instance)
+        test_string_1 = 'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nprint(ass_machine.direction)'
+        output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        print(result)
 
 def test_solar_panels(): # DEMO
         from eval.open.model.game_state import GameState
@@ -1576,6 +1607,6 @@ def test_solar_panels(): # DEMO
 if __name__ == '__main__':
         
     #unittest.main()
-    create_nonliquid_items()
-    #create_liquid_items()
+    #create_nonliquid_items()
+    test_rotation()
     #test_achievements_38()
