@@ -431,6 +431,11 @@ class StaticEntity(Entity):
     """A static (non-moving) entity in the game."""
     neighbours: Optional[Union[Dict, List[EntityCore]]] = []
 
+class Rail(Entity):
+    """Railway track for trains."""
+    _height: float = 1
+    _width: float = 1
+
 class Splitter(Entity):
     """A belt splitter that divides item flow between outputs."""
     input_positions: List[Position]

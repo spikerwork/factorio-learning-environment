@@ -91,6 +91,8 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     FastSplitter = "fast-splitter", Splitter
     ExpressSplitter = "express-splitter", Splitter
 
+    Rail = "rail", Rail
+
     TransportBelt = "transport-belt", TransportBelt
     FastTransportBelt = "fast-transport-belt", TransportBelt
     ExpressTransportBelt = "express-transport-belt", TransportBelt
@@ -177,6 +179,10 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     UtilitySciencePack = "utility-science-pack", None
     ChemicalSciencePack = "chemical-science-pack", None
 
+    ProductivityModule = "productivity-module", None
+    ProductivityModule2 = "productivity-module-2", None
+    ProductivityModule3 = "productivity-module-3", None
+
     RocketSilo = "rocket-silo", RocketSilo
     Rocket = "rocket", Rocket
     Satellite = "satellite", None
@@ -260,7 +266,7 @@ class Technology(enum.Enum):
     EnergyShield2 = "energy-shields-mk2-equipment"
 
     # Train technologies
-    # RailwayTransportation = "railway"
+    RailwayTransportation = "railway"
     # AutomatedRailTransportation = "automated-rail-transportation"
     # RailSignals = "rail-signals"
 
@@ -276,9 +282,9 @@ class Technology(enum.Enum):
     # SpeedModule = "speed-module"
     # SpeedModule2 = "speed-module-2"
     # SpeedModule3 = "speed-module-3"
-    # ProductivityModule = "productivity-module"
-    # ProductivityModule2 = "productivity-module-2"
-    # ProductivityModule3 = "productivity-module-3"
+    ProductivityModule = "productivity-module"
+    ProductivityModule2 = "productivity-module-2"
+    ProductivityModule3 = "productivity-module-3"
     # EfficiencyModule = "efficiency-module"
     # EfficiencyModule2 = "efficiency-module-2"
     # EfficiencyModule3 = "efficiency-module-3"

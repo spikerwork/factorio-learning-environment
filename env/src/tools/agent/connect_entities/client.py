@@ -160,11 +160,7 @@ class ConnectEntities(Tool):
         target_pos = target.position if not isinstance(target, Position) else target
 
         raise Exception(
-<<<<<<< HEAD
             f"Failed to connect {set([type.name for type in connection_types])} from {source.name} at {source.position} to {target.name} at {target.position}. "
-=======
-            f"Failed to connect {set([type.name for type in connection_types])} from {source_pos} to {target_pos}. "
->>>>>>> main
             f"{self.get_error_message(str(last_exception))}"
         )
 
