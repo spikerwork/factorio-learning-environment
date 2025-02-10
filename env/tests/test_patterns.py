@@ -1364,14 +1364,34 @@ def create_nonliquid_items(): # DEMO
                 #              ("steel-plate", "Prototype.SteelPlate"), 
                 #              ("copper-plate", "Prototype.CopperPlate")],
                 # "output": ("low-density-structure", "Prototype.LowDensityStructure")},
-                {"inputs": [("iron-plate", "Prototype.IronPlate")],
-                 "output": ("iron-stick", "Prototype.IronStick")},
-                 {"inputs": [("iron-plate", "Prototype.IronPlate")],
-                 "output": ("iron-gear-wheel", "Prototype.IronGearWheel")},
-                 {"inputs": [("copper-plate", "Prototype.CopperPlate"),],
-                 "output": ("copper-cable", "Prototype.CopperCable"),},
-                 {"inputs": [("stone-brick", "Prototype.StoneBrick"),],
-                 "output": ("stone-wall", "Prototype.StoneWall"),},
+                #{"inputs": [("iron-plate", "Prototype.IronPlate")],
+                #"output": ("iron-stick", "Prototype.IronStick")},
+                #{"inputs": [("iron-plate", "Prototype.IronPlate")],
+                #"output": ("iron-gear-wheel", "Prototype.IronGearWheel")},
+                #{"inputs": [("copper-plate", "Prototype.CopperPlate"),],
+                #"output": ("copper-cable", "Prototype.CopperCable"),},
+                #{"inputs": [("stone-brick", "Prototype.StoneBrick"),],
+                #"output": ("stone-wall", "Prototype.StoneWall"),},
+
+                # {"inputs": [("advanced-circuit", "Prototype.AdvancedCircuit"), 
+                #             ("electronic-circuit", "Prototype.ElectronicCircuit"),],
+                # "output": ("productivity-module", "Prototype.ProductivityModule")},
+                # {"inputs": [("advanced-circuit", "Prototype.AdvancedCircuit"), 
+                #             ("processing-unit", "Prototype.ProcessingUnit"),
+                #             ("productivity-module", "Prototype.ProductivityModule")],
+                # "output": ("productivity-module-2", "Prototype.ProductivityModule2")},
+                # {"inputs": [("advanced-circuit", "Prototype.AdvancedCircuit"), 
+                #             ("processing-unit", "Prototype.ProcessingUnit"),
+                #             ("productivity-module-2", "Prototype.ProductivityModule2")],
+                # "output": ("productivity-module-3", "Prototype.ProductivityModule3")},
+                # {"inputs": [("iron-stick", "Prototype.IronStick"),
+                #             ("steel-plate", "Prototype.SteelPlate"),
+                #             ("stone", "Prototype.Stone")],
+                # "output": ("rail", "Prototype.Rail")},
+                 {"inputs": [("rail", "Prototype.Rail"),
+                             ("productivity-module", "Prototype.ProductivityModule"),
+                             ("electric-furnace", "Prototype.ElectricFurnace")],
+                 "output": ("production-science-pack", "Prototype.ProductionSciencePack")},
         ]
         LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 10, "wooden-chest": 10, "burner-inserter": 10, "transport-belt": 500,
                                 "stone-furnace": 10, "boiler": 4, "offshore-pump": 3, "steam-engine": 2,
@@ -1411,7 +1431,7 @@ def create_nonliquid_items(): # DEMO
                 ingredient_list = [x[1] for x in test["inputs"]]
                 ingredient_list = str(ingredient_list)
                 ingredient_list = ingredient_list.replace("'", "")
-                test_string_1 = f'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nset_entity_recipe(entity = ass_machine, prototype = {test["output"][1]})\ninserter_1 = get_entity(Prototype.BurnerInserter, Position( x=-34.5, y=-16.5))\ninserter_2 = get_entity(Prototype.BurnerInserter, Position( x=-36.5, y=-18.5))\ninserter_3 = get_entity(Prototype.BurnerInserter, Position( x=-38.5, y=-16.5))\ninserter_4 = get_entity(Prototype.BurnerInserter, Position( x=-36.5,y=-14.5))\nchest_1 = get_entity(Prototype.WoodenChest, Position( x=-33.5 ,y=-16.5))\nchest_2 = get_entity(Prototype.WoodenChest, Position( x=-36.5,y=-19.5))\nchest_3 = get_entity(Prototype.WoodenChest, Position( x=-39.5, y=-16.5))\nfor idx, item in enumerate({ingredient_list}):\n    insert_item(item, [chest_1, chest_2, chest_3][idx], quantity=100)\nsleep(50)\noutput_chest = get_entity(Prototype.WoodenChest, Position(x=-36.5 ,y=-13.5))\noutput_inv = inspect_inventory(output_chest)\nprint(output_inv)\nassert output_inv.get({test["output"][1]}, 0) > 0, f"Test for {test["output"][1]} failed"'
+                test_string_1 = f'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nset_entity_recipe(entity = ass_machine, prototype = {test["output"][1]})\ninserter_1 = get_entity(Prototype.BurnerInserter, Position( x=-34.5, y=-16.5))\ninserter_2 = get_entity(Prototype.BurnerInserter, Position( x=-36.5, y=-18.5))\ninserter_3 = get_entity(Prototype.BurnerInserter, Position( x=-38.5, y=-16.5))\ninserter_4 = get_entity(Prototype.BurnerInserter, Position( x=-36.5,y=-14.5))\nchest_1 = get_entity(Prototype.WoodenChest, Position( x=-33.5 ,y=-16.5))\nchest_2 = get_entity(Prototype.WoodenChest, Position( x=-36.5,y=-19.5))\nchest_3 = get_entity(Prototype.WoodenChest, Position( x=-39.5, y=-16.5))\nfor idx, item in enumerate({ingredient_list}):\n    insert_item(item, [chest_1, chest_2, chest_3][idx], quantity=100)\nsleep(120)\noutput_chest = get_entity(Prototype.WoodenChest, Position(x=-36.5 ,y=-13.5))\noutput_inv = inspect_inventory(output_chest)\nprint(output_inv)\nassert output_inv.get({test["output"][1]}, 0) > 0, f"Test for {test["output"][1]} failed"'
                 output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
                 print(result)
                 assert "Error" not in result, f"Error in test {test['output'][1]}"
@@ -1558,5 +1578,5 @@ def test_solar_panels(): # DEMO
 if __name__ == '__main__':
         
     #unittest.main()
-    create_general_items()
+    create_nonliquid_items()
     #test_achievements_38()
