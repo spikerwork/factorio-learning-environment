@@ -1460,9 +1460,9 @@ def create_liquid_items(): # DEMO
                 #"liquid_input": ("water", "Prototype.Water"),
                 # "output": ("concrete", "Prototype.Concrete")},
                 
-                #{"solid_inputs": [("solid-fuel", "Prototype.SolidFuel")],
-                #"liquid_input": ("light-oil", "Prototype.LightOil"),
-                # "output": ("rocket-fuel", "Prototype.RocketFuel")},
+                {"solid_inputs": [("solid-fuel", "Prototype.SolidFuel")],
+                "liquid_input": ("light-oil", "Prototype.LightOil"),
+                 "output": ("rocket-fuel", "Prototype.RocketFuel")},
 
                 #{"solid_inputs": [("advanced-circuit", "Prototype.AdvancedCircuit"), 
                 #            ("electronic-circuit", "Prototype.ElectronicCircuit")],
@@ -1479,10 +1479,7 @@ def create_liquid_items(): # DEMO
                 #"liquid_input": ("lubricant", "Prototype.Lubricant"),
                 # "output": ("electric-engine-unit", "Prototype.ElectricEngineUnit")},
                 
-                 {"solid_inputs": [("copper-plate", "Prototype.CopperPlate"), 
-                            ("iron-plate", "Prototype.IronPlate")],
-                "liquid_input": ("sulfuric-acid", "Prototype.SulfuricAcid"),
-                 "output": ("battery", "Prototype.Battery")},
+                
                 
         ]
         LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 10, "wooden-chest": 10, "burner-inserter": 10, "transport-belt": 500,
@@ -1535,7 +1532,7 @@ def create_liquid_items(): # DEMO
                 ingredient_list = [x[1] for x in test["solid_inputs"]]
                 ingredient_list = str(ingredient_list)
                 ingredient_list = ingredient_list.replace("'", "")
-                test_string_1 = f'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nset_entity_recipe(entity = ass_machine, prototype = {test["output"][1]})\nchest_1 = get_entity(Prototype.WoodenChest, Position( x=-33.5 ,y=-16.5))\nchest_2 = get_entity(Prototype.WoodenChest, Position( x=-39.5,y=-16.5))\nchest_3 = get_entity(Prototype.WoodenChest, Position( x=-39.5,y=-17.5))\nchest_4 = get_entity(Prototype.WoodenChest, Position( x=-39.5, y=-15.5))\nfor idx, item in enumerate({ingredient_list}):\n    insert_item(item, [chest_1, chest_2, chest_3, chest_4][idx], quantity=100)\nsleep(120)\noutput_chest = get_entity(Prototype.WoodenChest, Position(x=-36.5 ,y=-19.5))\noutput_inv = inspect_inventory(output_chest)\nprint(output_inv)\nassert output_inv.get({test["output"][1]}, 0) > 0, f"Test for {test["output"][1]} failed"'
+                test_string_1 = f'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nset_entity_recipe(entity = ass_machine, prototype = {test["output"][1]})\nchest_1 = get_entity(Prototype.WoodenChest, Position( x=-33.5 ,y=-16.5))\nchest_2 = get_entity(Prototype.WoodenChest, Position( x=-39.5,y=-16.5))\nchest_3 = get_entity(Prototype.WoodenChest, Position( x=-39.5,y=-17.5))\nchest_4 = get_entity(Prototype.WoodenChest, Position( x=-39.5, y=-15.5))\nfor idx, item in enumerate({ingredient_list}):\n    insert_item(item, [chest_1, chest_2, chest_3, chest_4][idx], quantity=100)\nsleep(180)\noutput_chest = get_entity(Prototype.WoodenChest, Position(x=-36.5 ,y=-19.5))\noutput_inv = inspect_inventory(output_chest)\nprint(output_inv)\nassert output_inv.get({test["output"][1]}, 0) > 0, f"Test for {test["output"][1]} failed"'
                 output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
                 print(result)
                 assert "Error" not in result, f"Error in test {test['output'][1]}"
@@ -1562,7 +1559,7 @@ def test_rotation(): # DEMO
                                 inventory=LAB_PLAY_POPULATED_STARTING_INVENTORY) 
 
 
-        test_string_1 = 'assembly_pos = Position(x = -37, y = -16.5)\nmove_to(assembly_pos)\nass_machine = place_entity(Prototype.AssemblingMachine2, position=assembly_pos, direction = Direction.UP)\nset_entity_recipe(entity = ass_machine, prototype = Prototype.CopperPlate)\nprint(ass_machine.recipe)\nass_machine = rotate_entity(ass_machine, Direction.LEFT)\nprint(ass_machine.direction)'
+        test_string_1 = 'assembly_pos = Position(x = -37, y = -16.5)\nmove_to(assembly_pos)\nass_machine = place_entity(Prototype.AssemblingMachine2, position=assembly_pos, direction = Direction.UP)\nass_machine = set_entity_recipe(entity = ass_machine, prototype = Prototype.Battery)\nprint(ass_machine.recipe)\nass_machine = rotate_entity(ass_machine, Direction.LEFT)\nprint(ass_machine.direction)'
         output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
         print(result)
 
@@ -1608,5 +1605,5 @@ if __name__ == '__main__':
         
     #unittest.main()
     #create_nonliquid_items()
-    test_rotation()
+    create_liquid_items()
     #test_achievements_38()
