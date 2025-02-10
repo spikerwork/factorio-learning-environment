@@ -149,11 +149,14 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     AdvancedOilProcessing = "advanced-oil-processing", None # These are recipes, not prototypes.
     CoalLiquifaction = "coal-liquifaction", None # These are recipes, not prototypes.
     SolidFuel = "solid-fuel", None # These are recipes, not prototypes.
+    LightOil = "light-oil", None
+    HeavyOil = "heavy-oil", None
 
     ElectronicCircuit = "electronic-circuit", None
     AdvancedCircuit = "advanced-circuit", None
     ProcessingUnit = "processing-unit", None
     EngineUnit = "engine-unit", None
+    ElectricEngineUnit = "electric-engine-unit", None
 
     Lab = "lab", Lab
     Accumulator = "accumulator", Accumulator
@@ -178,10 +181,12 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     ProductionSciencePack = "production-science-pack", None
     UtilitySciencePack = "utility-science-pack", None
     ChemicalSciencePack = "chemical-science-pack", None
-
+    
     ProductivityModule = "productivity-module", None
     ProductivityModule2 = "productivity-module-2", None
     ProductivityModule3 = "productivity-module-3", None
+
+    FlyingRobotFrame = "flying-robot-frame", None
 
     RocketSilo = "rocket-silo", RocketSilo
     Rocket = "rocket", Rocket
@@ -290,7 +295,7 @@ class Technology(enum.Enum):
     # EfficiencyModule3 = "efficiency-module-3"
 
     # Robot technologies
-    # Robotics = "robotics"
+    Robotics = "robotics"
     # ConstructionRobotics = "construction-robotics"
     # LogisticRobotics = "logistic-robotics"
     # LogisticSystem = "logistic-system"
