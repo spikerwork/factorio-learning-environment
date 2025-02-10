@@ -4,7 +4,7 @@ from entities import Recipe, Ingredient, Product
 from instance import PLAYER
 from game_types import Prototype, RecipeName
 from tools.tool import Tool
-
+import enum
 
 class GetPrototypeRecipe(Tool):
 
@@ -17,7 +17,6 @@ class GetPrototypeRecipe(Tool):
         :param prototype: Prototype to get recipe from
         :return: Recipe of the given prototype
         """
-
         if isinstance(prototype, Prototype):
             name, _ = prototype.value
         elif isinstance(prototype, RecipeName):
@@ -28,7 +27,7 @@ class GetPrototypeRecipe(Tool):
         response, elapsed = self.execute(PLAYER, name)
 
         if not isinstance(response, dict):
-            raise Exception(f"Could not get recipe of {name}", response)
+            raise Exception(f"Could not get recipe of {name} - {response}. You may need to use the RecipeName enum instead.")
 
         parsed_response = self.parse_lua_dict(response)
 

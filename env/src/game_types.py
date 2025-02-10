@@ -23,6 +23,10 @@ class RecipeName(enum.Enum):
     HeavyOilCracking = "heavy-oil-cracking"
     LightOilCracking = "light-oil-cracking"
 
+    SolidFuelFromHeavyOil = "solid-fuel-from-heavy-oil"
+    SolidFuelFromLightOil = "solid-fuel-from-light-oil"
+    SolidFuelFromPetroleumGas = "solid-fuel-from-petroleum-gas"
+
     FillCrudeOilBarrel = "fill-crude-oil-barrel"
     FillHeavyOilBarrel = "fill-heavy-oil-barrel"
     FillLightOilBarrel = "fill-light-oil-barrel"
