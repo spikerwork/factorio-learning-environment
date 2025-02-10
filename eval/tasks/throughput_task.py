@@ -6,31 +6,36 @@ from env.src.utils.achievements import eval_program_with_achievements
 from eval.open.model.game_state import GameState
 import copy
 
-LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 10, "wooden-chest": 10, "burner-inserter": 10, "transport-belt": 500,
-                                "stone-furnace": 10, "boiler": 4, "offshore-pump": 3, "steam-engine": 2,
-                                "iron-gear-wheel": 22, "iron-plate": 19, "copper-plate": 52, "electronic-circuit": 99,
-                                "iron-ore": 62, "stone": 50, "electric-mining-drill": 10, "small-electric-pole": 500, "pipe": 100,
-                                "assembling-machine-1": 5, "electric-furnace": 10}
+LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 50, "wooden-chest": 10, "burner-inserter": 50,"inserter": 50, "transport-belt": 500,
+                                "stone-furnace": 10, "boiler": 2, "offshore-pump": 2, "steam-engine": 2,
+                                "electric-mining-drill": 50, "small-electric-pole": 500, "pipe": 100,
+                                "assembling-machine-2": 10, "electric-furnace": 10}
 
 
 
 class ThroughputTask(TaskABC):
     def __init__(self, maximum_steps, starting_inventory: Union[Inventory, Dict], task: str,
-                  throughput_entity: Entity, quota: int, wait_period: int, starting_setup_code_location: str = None):
+                  throughput_entity: Entity, quota: int, holdout_wait_period: int, pre_holdout_wait_period: int = 0):
         super().__init__(maximum_steps, starting_inventory, task=task)
         self.throughput_entity = throughput_entity
         self.quota = quota
-        self.wait_period = wait_period
-        self.starting_setup_code_location = starting_setup_code_location
+        self.holdout_wait_period = holdout_wait_period
         self.starting_game_state = None
-        self.starting_scenario_code = None
-        self.starting_scenario_logs = None
+        self.pre_holdout_wait_period = pre_holdout_wait_period
     
     def verify(self, score: float, step: int, instance: FactorioInstance, step_statistics: Dict) -> bool:
-        
-        result_list, result, error,  achievements = eval_program_with_achievements(program = f"sleep({self.wait_period})", instance=instance)
-        dynamic_achievements = achievements["dynamic"]
-        return dynamic_achievements.get(self.throughput_entity, 0) >= self.quota, achievements
+        max_achieved_throughput = 0
+        # wait the pre-holdout period
+        instance.sleep(self.pre_holdout_wait_period)
+        while True:
+            result_list, result, error,  achievements = eval_program_with_achievements(program = f"sleep({self.holdout_wait_period})", instance=instance)
+            dynamic_achievements = achievements["dynamic"]
+            target_throughput = dynamic_achievements.get(self.throughput_entity, 0)
+            if target_throughput > max_achieved_throughput:
+                max_achieved_throughput = target_throughput
+            else:
+                break
+        return max_achieved_throughput >= self.quota, achievements
             
     def _to_dict(self) -> Dict[str, Any]:
         return {
@@ -39,30 +44,14 @@ class ThroughputTask(TaskABC):
             "quota": self.quota,
             "maximum_steps": self.maximum_steps,
             "starting_inventory": self.starting_inventory,
-            "starting_setup_code_location": self.starting_setup_code_location,
             "initial_state": self.starting_game_state.to_raw(),
-            "initial_scenario_code": self.starting_scenario_code,
-            "initial_scenario_logs": self.starting_scenario_logs
         }
 
-
-    def setup(self, instance, zero_game_state: GameState):
+    def setup_instance(self, instance):
         """Code to provision the task environment"""
-        reset_game_state_copy = copy.deepcopy(zero_game_state)
-        reset_game_state_copy.inventory = self.starting_inventory
-        instance.reset(reset_game_state_copy)
-        print(instance.namespace.inspect_inventory())
-        if self.starting_setup_code_location is None:
-            starting_game_state = GameState.from_instance(instance)
-            self.starting_game_state = starting_game_state
-            return
-        # read in the starting code
-        with open(self.starting_setup_code_location, "r") as f:
-            starting_code = f.read()
-        # execute the starting code
-        output_list, result, error, achievements = eval_program_with_achievements(instance, starting_code)
-        # get the game state
-        starting_game_state = GameState.from_instance(instance)
-        self.starting_game_state = starting_game_state
-        self.starting_scenario_code = starting_code
-        self.starting_scenario_logs = result
+        pass
+
+    def setup(self, instance):
+        """setup function"""
+        self.setup_instance(instance)
+        self.starting_game_state = GameState.from_instance(instance)

@@ -128,8 +128,10 @@ def initiate_task_configs(input_task):
     return task_config
 
 def initialise_starting_state(instance, task, reset_game_state):
+    # reset the instance
+    instance.reset(reset_game_state)
     # reset the game state but with the new inventory
-    task.setup(instance, reset_game_state)
+    task.setup(instance)
     return task
 
 
@@ -172,18 +174,6 @@ def create_factorio_instance(instance_id: int) -> FactorioInstance:
     )
     instance.speed(10)
     return instance
-
-
-#def create_factorio_instances() -> List[FactorioInstance]:
-#    def init_instance(params: Tuple[str, int, int]) -> FactorioInstance:
-#        ip, udp_port, tcp_port = params
-#        return FactorioInstance(address=ip, tcp_port=tcp_port, bounding_box=200,
-#                                fast=True, cache_scripts=False, inventory={})
-#
-#    ips, udp_ports, tcp_ports = get_local_container_ips()
-#    with concurrent.futures.ThreadPoolExecutor() as executor:
-#        return list(executor.map(init_instance, zip(ips, udp_ports, tcp_ports)))
-
 
 SYSTEM_PROMPT = \
     """You are an agent designed to operate within FactoryEnv, a novel evaluation framework built on the game Factorio, with capabilities in long-horizon planning, spatial reasoning, and systematic automation. 
@@ -293,13 +283,6 @@ async def main():
     search_type = "beam_supervised"
     search_iterations = 1
 
-    #formatter = RecursiveFormatter(
-    #    chunk_size=32,
-    #    llm_factory=llm_factory,
-    #    cache_dir='./summary_cache',
-    #    summary_instructions=HISTORY_SUMMARIZATION_INSTRUCTIONS
-    #)
-
     formatter = RecursiveReportFormatter(
         chunk_size=128,
         llm_factory=llm_factory,
@@ -308,9 +291,7 @@ async def main():
     configs = {"beam_supervised": {"config": SupervisedExecutorConfig(
         n_parallel=1,
         model_to_evaluate=model_to_evaluate,
-        supervised_kwargs = {
-                             #"beam_unification_steps": 1,
-                             "system_prompt": prompt}),
+        supervised_kwargs = {"system_prompt": prompt}),
         "executor": MilestonesBeamSearchExecutor}
         }
     

@@ -8,7 +8,7 @@ class TaskABC:
         self.starting_inventory = starting_inventory
         self.task = task
     
-    def verify(score: float, step: int, inventory: Inventory, instance: FactorioInstance, step_statistics: Dict) -> bool:
+    def verify(self, score: float, step: int, instance: FactorioInstance, step_statistics: Dict) -> bool:
         """ Return true is the task is completed"""
         pass
     def setup(instance):

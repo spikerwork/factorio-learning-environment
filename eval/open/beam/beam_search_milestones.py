@@ -60,9 +60,12 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
             inventory = instance.namespace.inspect_inventory()
             dummy_program_code = "print(f'Inventory: {inspect_inventory()}')\nprint(f'Entities: {get_entities()}')\n"
             output = f"('Inventory: {inventory}')\n('Entities on the map: {entities}')"
+<<<<<<< HEAD
             if task.starting_scenario_logs:
                 output = f"{task.starting_scenario_logs}\n{output}"
                 dummy_program_code = f"{task.starting_scenario_code}\n{dummy_program_code}"
+=======
+>>>>>>> main
             first_dummy_program = Program(code=dummy_program_code, 
                                                               conversation=Conversation(messages=[]),
                                                               response=output,
@@ -118,11 +121,6 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
                             print("Could not save step - possibly missing (in case of skipping errors)")
                             print(e)
 
-                    if self.beam_unification_steps > 0 and (step_idx +1)%self.beam_unification_steps == 0:
-                        try:
-                            group = self.unify_beams(group, task)
-                        except Exception as e:
-                            print(F"Error during beam unification: {str(e)}")
                     group.evaluator.logger.update_progress()
                 results.append(output_dicts)
         except Exception as e:
@@ -132,36 +130,6 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
             self.cleanup()
             return results
 
-
-    def unify_beams(self, group, task):
-        # We do simple best of n unification
-        throughput_entity = task.throughput_entity
-        plan_outputs = group.plans
-        throughputs = {}
-        for instance_id, plan_output in plan_outputs.items():
-            last_step = plan_output.steps[-1]
-            if last_step.program.meta.get("holdout_achievements", None):
-                throughput = last_step.program.meta["holdout_achievements"]["dynamic"].get(throughput_entity, 0)
-            else:
-                throughput = 0
-            throughputs[instance_id] = throughput
-        # get the minimum throughput
-        min_throughput = min(throughputs.values())
-        max_throughput = max(throughputs.values())
-        if min_throughput == max_throughput:
-            return group
-        # get the instance with the maximum throughput
-        max_instance_id = max(throughputs, key=throughputs.get)
-        # we need to override all plans with the chosen plan
-        chosen_plan = plan_outputs[max_instance_id]
-        # also need to reset the instances to the new game state
-        instance = group.evaluator.instances[max_instance_id]
-        instance_game_state = GameState.from_instance(instance)
-        for instance_id, plan_output in group.plans.items():
-            group.plans[instance_id] = copy.deepcopy(chosen_plan)
-            group.plans[instance_id].meta["plan_id"] = instance_id
-            group.evaluator.instances[instance_id].reset(instance_game_state)
-        return group
 
     @retry(wait=wait_exponential(multiplier=1, min=4, max=10))
     async def generate_next_step(self, group, task) -> List[PlanOutput]:
@@ -343,7 +311,8 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
         await self.db_client.create_program(program)
         output_dict = {"step_nr": len(plan.steps),
                         "holdout_achievements" : step.program.meta.get("holdout_achievements", None),
-                        "program_id": program.id
+                        "program_id": program.id,
+                        "task_success": step.program.meta.get("task_success", None),
                         }
         return output_dict
 
@@ -367,9 +336,7 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
             plan.steps[-1] = step_to_process
             task_success, achievements = self.evaluate_task(plan=plan, group=group, task=task)
             plan.steps[-1].program.meta["holdout_achievements"] = achievements
-            throughput_entity = task.throughput_entity
-            throughput = achievements["dynamic"].get(throughput_entity, 0)
-            #throughput_str = f"Current throughput of {throughput_entity}: {throughput} created per 60 seconds"
+            plan.steps[-1].program.meta["task_success"] = task_success
             throughput_str = f"Here is the current througphut of your factory: {achievements['dynamic']} created per 60 seconds"
             plan.steps[-1].program.response += f"\n{throughput_str}"
             return plan
