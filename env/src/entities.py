@@ -361,6 +361,7 @@ class Recipe(BaseModel):
 
 
 class BurnerType(BaseModel):
+    """Type of entity that burns fuel"""
     class Config:
         arbitrary_types_allowed = True
     fuel: Inventory = Inventory() # Use this to check the fuel levels of the entity
@@ -374,6 +375,7 @@ class EntityCore(BaseModel):
         return f"Entity(name='{self.name}', direction={self.direction.name}, position=Position({self.position})"
 
 class Entity(EntityCore):
+    """Base class for all entities in the game."""
     id: Optional[int] = None
     energy: float
     type: Optional[str] = None
@@ -426,9 +428,11 @@ class Entity(EntityCore):
         return cls._height
 
 class StaticEntity(Entity):
+    """A static (non-moving) entity in the game."""
     neighbours: Optional[Union[Dict, List[EntityCore]]] = []
 
 class Splitter(Entity):
+    """A belt splitter that divides item flow between outputs."""
     input_positions: List[Position]
     output_positions: List[Position]
     inventory: List[Inventory] = []
@@ -436,6 +440,7 @@ class Splitter(Entity):
     _width: float = 2
 
 class TransportBelt(Entity):
+    """A conveyor belt for moving items."""
     input_position: Position
     output_position: Position
     inventory: Inventory = Inventory()
@@ -456,9 +461,11 @@ class TransportBelt(Entity):
         return (self.position.x, self.position.y) == (other.position.x, other.position.y)
 
 class Electric(BaseModel):
+    """Base class for entities that interact with the power grid."""
     electrical_id: Optional[int] = None
 
 class ElectricalProducer(Electric, Entity):
+    """An entity that generates electrical power."""
     production: Optional[Any] = {}
     energy_source: Optional[Any] = {}
     electric_output_flow_limit: Optional[float] = 0
@@ -470,40 +477,47 @@ class EnergySource(BaseModel):
     drain: str
 
 class Accumulator(StaticEntity, Electric):
+    """Represents an energy storage device"""
     energy_source: Optional[EnergySource] = None
     _height: float = 2
     _width: float = 2
 
 class Inserter(StaticEntity, Electric):
+    """Represents an inserter that moves items between entities."""
     pickup_position: Optional[Position] = None
     drop_position: Position
     _width: float = 1
     _height: float = 1
 
 class UndergroundBelt(TransportBelt):
+    """An underground section of transport belt."""
     is_input: bool
     connected_to: Optional[int] = None
     _height: float = 1
     _width: float = 1
 
 class MiningDrill(StaticEntity):
+    """Base class for mining drills that extract resources."""
     drop_position: Position
     resources: List[Ingredient]
 
 class ElectricMiningDrill(MiningDrill, Electric):
+    """An electrically-powered mining drill."""
     _height: float = 3
     _width: float = 3
     pass
 
 class BurnerInserter(Inserter, BurnerType):
+    """An inserter powered by burnable fuel."""
     _height: float = 1
     _width: float = 1
     pass
 
 class BurnerMiningDrill(MiningDrill, BurnerType):
-
+    """A mining drill powered by burnable fuel."""
     _width = 2
     _height = 2
+
 
 class Ammo(BaseModel):
     name: str
@@ -517,6 +531,7 @@ class GunTurret(StaticEntity):
     kills: Optional[int] = 0
 
 class AssemblingMachine(StaticEntity, Electric):
+    """A machine that crafts items from ingredients."""
     recipe: Optional[Recipe] = None  # Prototype
     assembling_machine_input: Inventory = Inventory()
     assembling_machine_output: Inventory = Inventory()
@@ -525,15 +540,18 @@ class AssemblingMachine(StaticEntity, Electric):
     _width: float = 3
 
 class FluidHandler(StaticEntity):
+    """Base class for entities that handle fluids"""
     connection_points: List[Position] = []
     fluid_box: Optional[Union[dict, list]] = []
     fluid_systems: Optional[Union[dict, list]] = []
 
 class AdvancedAssemblingMachine(FluidHandler, AssemblingMachine):
+    """A second and third tier assembling machine that can handle fluids."""
     _height: float = 3
     _width: float = 3
 
 class MultiFluidHandler(StaticEntity):
+    """Base class for entities that handle multiple fluid types."""
     input_fluids: List[str] = []
     output_fluids: List[str] = []
     input_connection_points: List[IndexedPosition] = []
@@ -542,53 +560,59 @@ class MultiFluidHandler(StaticEntity):
     fluid_systems: Optional[Union[dict, list]] = []
 
 class ChemicalPlant(MultiFluidHandler, AssemblingMachine):
+    """Represents a chemical plant that processes fluid recipes."""
     _height: float = 3
     _width: float = 3
     pass
 
 
 class OilRefinery(MultiFluidHandler, AssemblingMachine):
+    """An oil refinery for processing crude oil into products."""
     _height: float = 5
     _width: float = 5
 
 class PumpJack(MiningDrill, FluidHandler, Electric):
+    """A pump jack for extracting crude oil."""
     _height: float = 3
     _width: float = 3
     pass
 
 class SolarPanel(ElectricalProducer):
+    """A solar panel for generating power from sunlight."""
     _height: float = 3
     _width: float = 3
 
+
 class Boiler(FluidHandler, BurnerType):
+    """A boiler that heats water into steam."""
     steam_output_point: Optional[Position] = None
     _height: float = 2
     _width: float = 3
 
 class HeatExchanger(Boiler):
-    pass
+    """A nuclear heat exchanger that converts water to steam."""
 
 class Generator(FluidHandler, StaticEntity):
+    """A steam generator that produces electricity."""
     _height: float = 3
     _width: float = 5
-    pass
 
-class SteamEngine(FluidHandler, ElectricalProducer):
-    _height: float = 3
-    _width: float = 5
 
 class Pump(FluidHandler, Electric):
+    """An electrically-powered fluid pump."""
     _height: float = 1
     _width: float = 2
     pass
 
 class OffshorePump(FluidHandler):
+    """A pump that extracts water from water tiles."""
     _height: float = 1
     _width: float = 2
     pass
-    #fluid_box: Optional[Union[dict,list]] = []
+
 
 class ElectricityPole(Entity, Electric):
+    """A power pole for electricity distribution."""
     flow_rate: float
     _height: float = 1
     _width: float = 1
@@ -597,6 +621,7 @@ class ElectricityPole(Entity, Electric):
         return self.electrical_id
 
 class Furnace(Entity, BurnerType):
+    """A furnace for smelting items"""
     furnace_source: Inventory = Inventory()
     furnace_result: Inventory = Inventory()
     _height: float = 2
@@ -604,12 +629,14 @@ class Furnace(Entity, BurnerType):
 
 
 class ElectricFurnace(Electric):
+    """An electrically-powered furnace."""
     furnace_source: Inventory = Inventory()
     furnace_result: Inventory = Inventory()
     _height: float = 3
     _width: float = 3
 
 class Chest(Entity):
+    """A storage chest."""
     inventory: Inventory = Inventory()
     _height: float = 1
     _width: float = 1
@@ -620,10 +647,11 @@ class StorageTank(Entity):
     _width: float = 3
 
 class StorageTank(FluidHandler):
-    pass
+    """A tank for storing fluids."""
 
 class RocketSilo(StaticEntity, Electric):
-    """Represents a rocket silo that can build and launch rockets."""
+    """A rocket silo that can build and launch rockets."""
+
     rocket_parts: int = 0  # Number of rocket parts currently assembled
     rocket_inventory: Inventory = Inventory()  # Holds satellite or other payload
     rocket_progress: float = 0.0  # Progress of current rocket construction (0-100)
@@ -635,7 +663,8 @@ class RocketSilo(StaticEntity, Electric):
                f"launch_count={self.launch_count})"
 
 class Rocket(Entity):
-    """Represents a rocket that can be launched from a silo."""
+    """A rocket that can be launched from a silo."""
+
     payload: Optional[Inventory] = None
     launch_progress: float = 0.0  # Progress of launch sequence (0-100)
 
@@ -644,6 +673,8 @@ class Rocket(Entity):
         return f"\n\tRocket(status={self.status}, launch_progress={self.launch_progress:.1f}%{payload_str})"
 
 class Lab(Entity, Electric):
+    """A research laboratory."""
+
     lab_input: Inventory = Inventory()
     lab_modules: Inventory = Inventory()
     research: Optional[Any] = None # Technology
@@ -658,6 +689,8 @@ class Lab(Entity, Electric):
         return f"\n\tLab(lab_input={self.lab_input}, status={self.status}, {research_string}electrical_id={self.electrical_id})"
 
 class Pipe(Entity):
+    """A pipe for fluid transport"""
+
     fluidbox_id: int
     flow_rate: float
     contents: float
@@ -666,6 +699,7 @@ class Pipe(Entity):
     _width: float = 1
 
 class Reactor(StaticEntity):
+    """A nuclear reactor"""
     pass
 
 class EntityGroup(BaseModel):
@@ -674,7 +708,15 @@ class EntityGroup(BaseModel):
     position: Position
     name: str = "entity-group"
 
+class WallGroup(EntityGroup):
+    """A wall"""
+
+    name: str = "wall-group"
+    entities: List[Entity]
+
 class BeltGroup(EntityGroup):
+    """A connected group of transport belts."""
+
     belts: List[TransportBelt]
     inputs: List[Entity]
     outputs: List[Entity]
@@ -689,6 +731,8 @@ class BeltGroup(EntityGroup):
         return self.__repr__()
 
 class PipeGroup(EntityGroup):
+    """A connected group of pipes."""
+
     pipes: List[Pipe]
     name: str = 'pipe-group'
 
@@ -707,6 +751,8 @@ class PipeGroup(EntityGroup):
     def __str__(self):
         return self.__repr__()
 class ElectricityGroup(EntityGroup):
+    """Represents a connected power network."""
+
     name: str = 'electricity-group'
     poles: List[ElectricityPole]
 
