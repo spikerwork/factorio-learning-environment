@@ -1319,14 +1319,59 @@ def create_gear_wheels(): # DEMO
 
 
 
-def create_general_items(): # DEMO
+def create_nonliquid_items(): # DEMO
         from eval.open.model.game_state import GameState
         from env.src.game_types import Prototype, Resource, Direction, Position, BuildingBox   
         tests = [
-                {"inputs": [("stone-wall", "Prototype.StoneWall"), 
-                            ("grenade", "Prototype.Grenade"),
-                              ("piercing-rounds-magazine", "Prototype.PiercingRoundsMagazine"),],
-                 "output": ("military-science-pack", "Prototype.MilitarySciencePack")},
+                #{"inputs": [("stone-wall", "Prototype.StoneWall"), 
+                #            ("grenade", "Prototype.Grenade"),
+                #              ("piercing-rounds-magazine", "Prototype.PiercingRoundsMagazine"),],
+                # "output": ("military-science-pack", "Prototype.MilitarySciencePack")},
+                # {"inputs": [("inserter", "Prototype.Inserter"), 
+                #            ("transport-belt", "Prototype.TransportBelt")],
+                # "output": ("logistic-science-pack", "Prototype.LogisticsSciencePack")},
+                # {"inputs": [("iron-gear-wheel", "Prototype.IronGearWheel"), 
+                #            ("electronic-circuit", "Prototype.ElectronicCircuit"),
+                #              ("iron-plate", "Prototype.IronPlate"),],
+                # "output": ("inserter", "Prototype.Inserter")},
+                # {"inputs": [("iron-gear-wheel", "Prototype.IronGearWheel"), 
+                #              ("iron-plate", "Prototype.IronPlate"),],
+                # "output": ("transport-belt", "Prototype.TransportBelt")},
+                # {"inputs": [("iron-gear-wheel", "Prototype.IronGearWheel"), 
+                #              ("copper-plate", "Prototype.CopperPlate"),],
+                # "output": ("automation-science-pack", "Prototype.AutomationSciencePack")},
+                # {"inputs": [("copper-cable", "Prototype.CopperCable"), 
+                #              ("iron-plate", "Prototype.IronPlate"),],
+                # "output": ("electronic-circuit", "Prototype.ElectronicCircuit")},
+
+                # {"inputs": [("copper-cable", "Prototype.CopperCable"), 
+                #             ("electronic-circuit", "Prototype.ElectronicCircuit"),
+                #            ("plastic-bar", "Prototype.PlasticBar")],
+                # "output": ("advanced-circuit", "Prototype.AdvancedCircuit")},
+                # {"inputs": [("advanced-circuit", "Prototype.AdvancedCircuit"), 
+                #            ("engine-unit", "Prototype.EngineUnit"),
+                #              ("sulfur", "Prototype.Sulfur"),],
+                # "output": ("chemical-science-pack", "Prototype.ChemicalSciencePack")},
+                # {"inputs": [("steel-plate", "Prototype.SteelPlate"), 
+                #            ("pipe", "Prototype.Pipe"),
+                #              ("iron-gear-wheel", "Prototype.IronGearWheel"),],
+                # "output": ("engine-unit", "Prototype.EngineUnit"),},
+                # {"inputs": [("advanced-circuit", "Prototype.AdvancedCircuit"), 
+                #              ("steel-plate", "Prototype.SteelPlate"), 
+                #              ("stone-brick", "Prototype.StoneBrick")],
+                # "output": ("electric-furnace", "Prototype.ElectricFurnace")},
+                # {"inputs": [("plastic-bar", "Prototype.PlasticBar"), 
+                #              ("steel-plate", "Prototype.SteelPlate"), 
+                #              ("copper-plate", "Prototype.CopperPlate")],
+                # "output": ("low-density-structure", "Prototype.LowDensityStructure")},
+                {"inputs": [("iron-plate", "Prototype.IronPlate")],
+                 "output": ("iron-stick", "Prototype.IronStick")},
+                 {"inputs": [("iron-plate", "Prototype.IronPlate")],
+                 "output": ("iron-gear-wheel", "Prototype.IronGearWheel")},
+                 {"inputs": [("copper-plate", "Prototype.CopperPlate"),],
+                 "output": ("copper-cable", "Prototype.CopperCable"),},
+                 {"inputs": [("stone-brick", "Prototype.StoneBrick"),],
+                 "output": ("stone-wall", "Prototype.StoneWall"),},
         ]
         LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 10, "wooden-chest": 10, "burner-inserter": 10, "transport-belt": 500,
                                 "stone-furnace": 10, "boiler": 4, "offshore-pump": 3, "steam-engine": 2,
@@ -1346,36 +1391,133 @@ def create_general_items(): # DEMO
                                 #cache_scripts=False,
                                 inventory=LAB_PLAY_POPULATED_STARTING_INVENTORY) 
 
-        #test_string_1 = '\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\nsleep(5)\ninserter_to_furnace1 = place_entity_next_to(Prototype.StoneFurnace,reference_position=drill.drop_position, spacing=0)'
-        #test_string_1 = 'print(Prototype.BurnerMiningDrill.WIDTH)\nprint(Prototype.AssemblingMachine2.HEIGHT)\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\nbbox = BuildingBox(height = 2,width = 3)\ncoords = nearest_buildable(entity = Prototype.Boiler, building_box = bbox, center_position = drill.drop_position)\nfurn = place_entity(Prototype.Boiler, position = coords.left_top, direction = Direction.RIGHT)'
         test_string_1 = '# Find water for power generation\nprint("Starting to build power infrastructure")\nwater_pos = nearest(Resource.Water)\nmove_to(water_pos)\n\n# Place offshore pump\npump = place_entity(Prototype.OffshorePump, position=water_pos)\nprint(f"Placed offshore pump at {pump.position}")\n\n# Place boiler with spacing for pipes\nboiler = place_entity_next_to(\n    Prototype.Boiler,\n    reference_position=pump.position,\n    direction=Direction.RIGHT,\n    spacing=2\n)\nprint(f"Placed boiler at {boiler.position}")\n\n# Add coal to boiler\nboiler = insert_item(Prototype.Coal, boiler, 50)\nprint(f"Added coal to boiler")\n\n# Place steam engine with spacing for pipes\nsteam_engine = place_entity_next_to(\n    Prototype.SteamEngine,\n    reference_position=boiler.position,\n    direction=Direction.RIGHT,\n    spacing=2\n)\nprint(f"Placed steam engine at {steam_engine.position}")\n\n# Connect pump to boiler with pipes\nwater_connection = connect_entities(pump, boiler, Prototype.Pipe)\nprint(f"Connected water from pump to boiler")\n\n# Connect boiler to steam engine with pipes\nsteam_connection = connect_entities(boiler, steam_engine, Prototype.Pipe)\nprint(f"Connected steam from boiler to engine")\n\n# Sleep to let system start up\nsleep(5)\n\n# Verify power generation\nsteam_engine = get_entity(Prototype.SteamEngine, steam_engine.position)\nassert steam_engine.energy > 0, "Steam engine is not generating power"\nprint("Power infrastructure successfully built and generating electricity")'
         output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
         print(result)
-        
-
 
         test_string_1 = 'assembly_pos = Position(x = -37, y = -16.5)\nmove_to(assembly_pos)\ntarget_machine = place_entity(Prototype.AssemblingMachine2, position=assembly_pos, direction = Direction.DOWN)\nprint(f"Placed AssemblingMachine1 at {target_machine.position} to automatically create copper cables")\n# put a inserter next to the assembly machine\n# always use 0 spacing for inserters\n# direction is RIGHT as we added to the width of the buildable coordinates\nmachine_input_inserter = place_entity_next_to(Prototype.BurnerInserter,\n    reference_position=target_machine.position,\n    direction=Direction.RIGHT,\n    spacing = 0)\n# rotate the inserter as we need to put items into the chest\nmachine_input_inserter = rotate_entity(machine_input_inserter, direction = Direction.LEFT)\ninput_chest = place_entity(Prototype.WoodenChest,position=machine_input_inserter.pickup_position)\nprint(f"Placed input inserter at {machine_input_inserter.position} and chest at {input_chest.position}")\n# fuel the inserter\n# we also update the inserter variable by returning it from the function\n# This ensures it doesnt get stale and the inventory updates are represented in the variable\nmachine_input_inserter = insert_item(Prototype.Coal, machine_input_inserter, quantity=20)\nmachine_input_inserter = place_entity_next_to(Prototype.BurnerInserter,\n    reference_position=target_machine.position,\n    direction=Direction.UP,\n    spacing = 0)\n# rotate the inserter as we need to put items into the chest\nmachine_input_inserter = rotate_entity(machine_input_inserter, direction = Direction.DOWN)\ninput_chest = place_entity(Prototype.WoodenChest,position=machine_input_inserter.pickup_position)\nprint(f"Placed input inserter at {machine_input_inserter.position} and chest at {input_chest.position}")\n# fuel the inserter\n# we also update the inserter variable by returning it from the function\n# This ensures it doesnt get stale and the inventory updates are represented in the variable\nmachine_input_inserter = insert_item(Prototype.Coal, machine_input_inserter, quantity=20)\nmachine_input_inserter = place_entity_next_to(Prototype.BurnerInserter,\n    reference_position=target_machine.position,\n    direction=Direction.LEFT,\n    spacing = 0)\n# rotate the inserter as we need to put items into the chest\nmachine_input_inserter = rotate_entity(machine_input_inserter, direction = Direction.RIGHT)\ninput_chest = place_entity(Prototype.WoodenChest,position=machine_input_inserter.pickup_position)\nprint(f"Placed input inserter at {machine_input_inserter.position} and chest at {input_chest.position}")\n# fuel the inserter\n# we also update the inserter variable by returning it from the function\n# This ensures it doesnt get stale and the inventory updates are represented in the variable\nmachine_input_inserter = insert_item(Prototype.Coal, machine_input_inserter, quantity=20)\nmachine_output_inserter = place_entity_next_to(Prototype.BurnerInserter,\n    reference_position=target_machine.position,\n    direction=Direction.DOWN,\n    spacing = 0)\nprint(f"Placed a inserter at {machine_output_inserter.position} to put copper plates into assembling machine at {target_machine.position}")\n# fuel the inserter\n# we also update the inserter variable by returning it from the function\n# This ensures it doesnt get stale and the inventory updates are represented in the variable\nmachine_input_inserter = insert_item(Prototype.Coal, machine_input_inserter, quantity=20)\nchest = place_entity(Prototype.WoodenChest, position = machine_output_inserter.drop_position)\nprint(f"Placed output chest at {chest.position}")'
-        #test_string_1 = '\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\ninserter_to_furnace1 = place_entity_next_to(Prototype.WoodenChest,reference_position=drill.position, direction = drill.direction)'
         output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
         print(result)
 
 
-        test_string_1 = 'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nass_machine = rotate_entity(ass_machine, direction = Direction.DOWN)\nsteam_engine = get_entity(Prototype.SteamEngine, Position(x=-1.5, y=1.5))\ngroup = connect_entities(ass_machine,steam_engine, Prototype.SmallElectricPole)\nprint(f"Connected ass_machine {ass_machine.position} with {group}")'
-        #test_string_1 = '\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\ninserter_to_furnace1 = place_entity_next_to(Prototype.WoodenChest,reference_position=drill.position, direction = drill.direction)'
+        test_string_1 = 'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nsteam_engine = get_entity(Prototype.SteamEngine, Position(x=-1.5, y=1.5))\ngroup = connect_entities(ass_machine,steam_engine, Prototype.SmallElectricPole)\nprint(f"Connected ass_machine {ass_machine.position} with {group}")\nass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nassert ass_machine.energy > 0, "Assembly machine not connected to power"'
         output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
         print(result)
-
+        assert "Error" not in result, "Could not connect ass machine to power"
+        game_state = GameState.from_instance(instance)
 
         for test in tests:
 
                 ingredient_list = [x[1] for x in test["inputs"]]
                 ingredient_list = str(ingredient_list)
                 ingredient_list = ingredient_list.replace("'", "")
-                test_string_1 = f'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nset_entity_recipe(entity = ass_machine, prototype = {test["output"][1]})\ninserter_1 = get_entity(Prototype.BurnerInserter, Position( x=-34.5, y=-16.5))\ninserter_2 = get_entity(Prototype.BurnerInserter, Position( x=-36.5, y=-18.5))\ninserter_3 = get_entity(Prototype.BurnerInserter, Position( x=-38.5, y=-16.5))\ninserter_4 = get_entity(Prototype.BurnerInserter, Position( x=-36.5,y=-14.5))\nchest_1 = get_entity(Prototype.WoodenChest, Position( x=-33.5 ,y=-16.5))\nchest_2 = get_entity(Prototype.WoodenChest, Position( x=-36.5,y=-19.5))\nchest_3 = get_entity(Prototype.WoodenChest, Position( x=-39.5, y=-16.5))\noutput_chest = get_entity(Prototype.WoodenChest, Position(x=-36.5 ,y=-13.5))\nfor idx, item in enumerate({ingredient_list}):\n    insert_item(item, [chest_1, chest_2, chest_3][idx], quantity=100)\noutput_inv = inspect_inventory(output_chest)\nprint(output_inv)'
-                #test_string_1 = '\niron_ore_loc = nearest(Resource.IronOre)\nprint(f"found iron ore at {iron_ore_loc}")\nmove_to(iron_ore_loc)\nprint(f"Moved to iron ore location")\ndrill = place_entity(Prototype.BurnerMiningDrill, position = iron_ore_loc)\ndrill = insert_item(Prototype.Coal, drill, 30)\nprint(f"Placed drill at iron ore location ({drill.position}) and inserted coal")\ninserter_to_furnace1 = place_entity_next_to(Prototype.WoodenChest,reference_position=drill.position, direction = drill.direction)'
+                test_string_1 = f'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nset_entity_recipe(entity = ass_machine, prototype = {test["output"][1]})\ninserter_1 = get_entity(Prototype.BurnerInserter, Position( x=-34.5, y=-16.5))\ninserter_2 = get_entity(Prototype.BurnerInserter, Position( x=-36.5, y=-18.5))\ninserter_3 = get_entity(Prototype.BurnerInserter, Position( x=-38.5, y=-16.5))\ninserter_4 = get_entity(Prototype.BurnerInserter, Position( x=-36.5,y=-14.5))\nchest_1 = get_entity(Prototype.WoodenChest, Position( x=-33.5 ,y=-16.5))\nchest_2 = get_entity(Prototype.WoodenChest, Position( x=-36.5,y=-19.5))\nchest_3 = get_entity(Prototype.WoodenChest, Position( x=-39.5, y=-16.5))\nfor idx, item in enumerate({ingredient_list}):\n    insert_item(item, [chest_1, chest_2, chest_3][idx], quantity=100)\nsleep(50)\noutput_chest = get_entity(Prototype.WoodenChest, Position(x=-36.5 ,y=-13.5))\noutput_inv = inspect_inventory(output_chest)\nprint(output_inv)\nassert output_inv.get({test["output"][1]}, 0) > 0, f"Test for {test["output"][1]} failed"'
                 output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
                 print(result)
+                assert "Error" not in result, f"Error in test {test['output'][1]}"
 
+                instance.reset(game_state)
+        print(f"asd")
+
+
+def create_liquid_items(): # DEMO
+        from eval.open.model.game_state import GameState
+        from env.src.game_types import Prototype, Resource, Direction, Position, BuildingBox   
+        tests = [
+                #{"inputs": [("stone-wall", "Prototype.StoneWall"), 
+                #            ("grenade", "Prototype.Grenade"),
+                #              ("piercing-rounds-magazine", "Prototype.PiercingRoundsMagazine"),],
+                # "output": ("military-science-pack", "Prototype.MilitarySciencePack")},
+                # {"inputs": [("inserter", "Prototype.Inserter"), 
+                #            ("transport-belt", "Prototype.TransportBelt")],
+                # "output": ("logistic-science-pack", "Prototype.LogisticsSciencePack")},
+                # {"inputs": [("iron-gear-wheel", "Prototype.IronGearWheel"), 
+                #            ("electronic-circuit", "Prototype.ElectronicCircuit"),
+                #              ("iron-plate", "Prototype.IronPlate"),],
+                # "output": ("inserter", "Prototype.Inserter")},
+                # {"inputs": [("iron-gear-wheel", "Prototype.IronGearWheel"), 
+                #              ("iron-plate", "Prototype.IronPlate"),],
+                # "output": ("transport-belt", "Prototype.TransportBelt")},
+                # {"inputs": [("iron-gear-wheel", "Prototype.IronGearWheel"), 
+                #              ("copper-plate", "Prototype.CopperPlate"),],
+                # "output": ("automation-science-pack", "Prototype.AutomationSciencePack")},
+                # {"inputs": [("copper-cable", "Prototype.CopperCable"), 
+                #              ("iron-plate", "Prototype.IronPlate"),],
+                # "output": ("electronic-circuit", "Prototype.ElectronicCircuit")},
+
+                # {"inputs": [("copper-cable", "Prototype.CopperCable"), 
+                #             ("electronic-circuit", "Prototype.ElectronicCircuit"),
+                #            ("plastic-bar", "Prototype.PlasticBar")],
+                # "output": ("advanced-circuit", "Prototype.AdvancedCircuit")},
+                # {"inputs": [("advanced-circuit", "Prototype.AdvancedCircuit"), 
+                #            ("engine-unit", "Prototype.EngineUnit"),
+                #              ("sulfur", "Prototype.Sulfur"),],
+                # "output": ("chemical-science-pack", "Prototype.ChemicalSciencePack")},
+                # {"inputs": [("steel-plate", "Prototype.SteelPlate"), 
+                #            ("pipe", "Prototype.Pipe"),
+                #              ("iron-gear-wheel", "Prototype.IronGearWheel"),],
+                # "output": ("engine-unit", "Prototype.EngineUnit"),},
+                # {"inputs": [("advanced-circuit", "Prototype.AdvancedCircuit"), 
+                #              ("steel-plate", "Prototype.SteelPlate"), 
+                #              ("stone-brick", "Prototype.StoneBrick")],
+                # "output": ("electric-furnace", "Prototype.ElectricFurnace")},
+                # {"inputs": [("plastic-bar", "Prototype.PlasticBar"), 
+                #              ("steel-plate", "Prototype.SteelPlate"), 
+                #              ("copper-plate", "Prototype.CopperPlate")],
+                # "output": ("low-density-structure", "Prototype.LowDensityStructure")},
+                {"inputs": [("iron-plate", "Prototype.IronPlate")],
+                 "output": ("iron-stick", "Prototype.IronStick")},
+                 {"inputs": [("iron-plate", "Prototype.IronPlate")],
+                 "output": ("iron-gear-wheel", "Prototype.IronGearWheel")},
+                 {"inputs": [("copper-plate", "Prototype.CopperPlate"),],
+                 "output": ("copper-cable", "Prototype.CopperCable"),},
+                 {"inputs": [("stone-brick", "Prototype.StoneBrick"),],
+                 "output": ("stone-wall", "Prototype.StoneWall"),},
+        ]
+        LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 10, "wooden-chest": 10, "burner-inserter": 10, "transport-belt": 500,
+                                "stone-furnace": 10, "boiler": 4, "offshore-pump": 3, "steam-engine": 2,
+                                "iron-gear-wheel": 22, "iron-plate": 19, "copper-plate": 52, "electronic-circuit": 99,
+                                "iron-ore": 62, "stone": 50, "electric-mining-drill": 10, "small-electric-pole": 500, "pipe": 100,
+                                "assembling-machine-1": 5, "electric-furnace": 10, "assembling-machine-2": 5}
+        for test in tests:
+                for input in test["inputs"]:
+                        if input[0] not in LAB_PLAY_POPULATED_STARTING_INVENTORY:
+                                LAB_PLAY_POPULATED_STARTING_INVENTORY[input[0]] = 100
+                        else:
+                                LAB_PLAY_POPULATED_STARTING_INVENTORY[input[0]] += 100
+        instance = FactorioInstance(address='localhost',
+                                bounding_box=200,
+                                tcp_port=27015,
+                                fast=True,
+                                #cache_scripts=False,
+                                inventory=LAB_PLAY_POPULATED_STARTING_INVENTORY) 
+
+        test_string_1 = '# Find water for power generation\nprint("Starting to build power infrastructure")\nwater_pos = nearest(Resource.Water)\nmove_to(water_pos)\n\n# Place offshore pump\npump = place_entity(Prototype.OffshorePump, position=water_pos)\nprint(f"Placed offshore pump at {pump.position}")\n\n# Place boiler with spacing for pipes\nboiler = place_entity_next_to(\n    Prototype.Boiler,\n    reference_position=pump.position,\n    direction=Direction.RIGHT,\n    spacing=2\n)\nprint(f"Placed boiler at {boiler.position}")\n\n# Add coal to boiler\nboiler = insert_item(Prototype.Coal, boiler, 50)\nprint(f"Added coal to boiler")\n\n# Place steam engine with spacing for pipes\nsteam_engine = place_entity_next_to(\n    Prototype.SteamEngine,\n    reference_position=boiler.position,\n    direction=Direction.RIGHT,\n    spacing=2\n)\nprint(f"Placed steam engine at {steam_engine.position}")\n\n# Connect pump to boiler with pipes\nwater_connection = connect_entities(pump, boiler, Prototype.Pipe)\nprint(f"Connected water from pump to boiler")\n\n# Connect boiler to steam engine with pipes\nsteam_connection = connect_entities(boiler, steam_engine, Prototype.Pipe)\nprint(f"Connected steam from boiler to engine")\n\n# Sleep to let system start up\nsleep(5)\n\n# Verify power generation\nsteam_engine = get_entity(Prototype.SteamEngine, steam_engine.position)\nassert steam_engine.energy > 0, "Steam engine is not generating power"\nprint("Power infrastructure successfully built and generating electricity")'
+        output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        print(result)
+
+        test_string_1 = 'assembly_pos = Position(x = -37, y = -16.5)\nmove_to(assembly_pos)\ntarget_machine = place_entity(Prototype.AssemblingMachine2, position=assembly_pos, direction = Direction.DOWN)\nprint(f"Placed AssemblingMachine1 at {target_machine.position} to automatically create copper cables")\n# put a inserter next to the assembly machine\n# always use 0 spacing for inserters\n# direction is RIGHT as we added to the width of the buildable coordinates\nmachine_input_inserter = place_entity_next_to(Prototype.BurnerInserter,\n    reference_position=target_machine.position,\n    direction=Direction.RIGHT,\n    spacing = 0)\n# rotate the inserter as we need to put items into the chest\nmachine_input_inserter = rotate_entity(machine_input_inserter, direction = Direction.LEFT)\ninput_chest = place_entity(Prototype.WoodenChest,position=machine_input_inserter.pickup_position)\nprint(f"Placed input inserter at {machine_input_inserter.position} and chest at {input_chest.position}")\n# fuel the inserter\n# we also update the inserter variable by returning it from the function\n# This ensures it doesnt get stale and the inventory updates are represented in the variable\nmachine_input_inserter = insert_item(Prototype.Coal, machine_input_inserter, quantity=20)\nmachine_input_inserter = place_entity_next_to(Prototype.BurnerInserter,\n    reference_position=target_machine.position,\n    direction=Direction.UP,\n    spacing = 0)\n# rotate the inserter as we need to put items into the chest\nmachine_input_inserter = rotate_entity(machine_input_inserter, direction = Direction.DOWN)\ninput_chest = place_entity(Prototype.WoodenChest,position=machine_input_inserter.pickup_position)\nprint(f"Placed input inserter at {machine_input_inserter.position} and chest at {input_chest.position}")\n# fuel the inserter\n# we also update the inserter variable by returning it from the function\n# This ensures it doesnt get stale and the inventory updates are represented in the variable\nmachine_input_inserter = insert_item(Prototype.Coal, machine_input_inserter, quantity=20)\nmachine_input_inserter = place_entity_next_to(Prototype.BurnerInserter,\n    reference_position=target_machine.position,\n    direction=Direction.LEFT,\n    spacing = 0)\n# rotate the inserter as we need to put items into the chest\nmachine_input_inserter = rotate_entity(machine_input_inserter, direction = Direction.RIGHT)\ninput_chest = place_entity(Prototype.WoodenChest,position=machine_input_inserter.pickup_position)\nprint(f"Placed input inserter at {machine_input_inserter.position} and chest at {input_chest.position}")\n# fuel the inserter\n# we also update the inserter variable by returning it from the function\n# This ensures it doesnt get stale and the inventory updates are represented in the variable\nmachine_input_inserter = insert_item(Prototype.Coal, machine_input_inserter, quantity=20)\nmachine_output_inserter = place_entity_next_to(Prototype.BurnerInserter,\n    reference_position=target_machine.position,\n    direction=Direction.DOWN,\n    spacing = 0)\nprint(f"Placed a inserter at {machine_output_inserter.position} to put copper plates into assembling machine at {target_machine.position}")\n# fuel the inserter\n# we also update the inserter variable by returning it from the function\n# This ensures it doesnt get stale and the inventory updates are represented in the variable\nmachine_input_inserter = insert_item(Prototype.Coal, machine_input_inserter, quantity=20)\nchest = place_entity(Prototype.WoodenChest, position = machine_output_inserter.drop_position)\nprint(f"Placed output chest at {chest.position}")'
+        output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        print(result)
+
+
+        test_string_1 = 'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nsteam_engine = get_entity(Prototype.SteamEngine, Position(x=-1.5, y=1.5))\ngroup = connect_entities(ass_machine,steam_engine, Prototype.SmallElectricPole)\nprint(f"Connected ass_machine {ass_machine.position} with {group}")\nass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nassert ass_machine.energy > 0, "Assembly machine not connected to power"'
+        output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        print(result)
+        assert "Error" not in result, "Could not connect ass machine to power"
+        game_state = GameState.from_instance(instance)
+
+        for test in tests:
+
+                ingredient_list = [x[1] for x in test["inputs"]]
+                ingredient_list = str(ingredient_list)
+                ingredient_list = ingredient_list.replace("'", "")
+                test_string_1 = f'ass_machine = get_entity(Prototype.AssemblingMachine2, Position(x = -37, y = -16.5))\nset_entity_recipe(entity = ass_machine, prototype = {test["output"][1]})\ninserter_1 = get_entity(Prototype.BurnerInserter, Position( x=-34.5, y=-16.5))\ninserter_2 = get_entity(Prototype.BurnerInserter, Position( x=-36.5, y=-18.5))\ninserter_3 = get_entity(Prototype.BurnerInserter, Position( x=-38.5, y=-16.5))\ninserter_4 = get_entity(Prototype.BurnerInserter, Position( x=-36.5,y=-14.5))\nchest_1 = get_entity(Prototype.WoodenChest, Position( x=-33.5 ,y=-16.5))\nchest_2 = get_entity(Prototype.WoodenChest, Position( x=-36.5,y=-19.5))\nchest_3 = get_entity(Prototype.WoodenChest, Position( x=-39.5, y=-16.5))\nfor idx, item in enumerate({ingredient_list}):\n    insert_item(item, [chest_1, chest_2, chest_3][idx], quantity=100)\nsleep(50)\noutput_chest = get_entity(Prototype.WoodenChest, Position(x=-36.5 ,y=-13.5))\noutput_inv = inspect_inventory(output_chest)\nprint(output_inv)\nassert output_inv.get({test["output"][1]}, 0) > 0, f"Test for {test["output"][1]} failed"'
+                output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+                print(result)
+                assert "Error" not in result, f"Error in test {test['output'][1]}"
+
+                instance.reset(game_state)
         print(f"asd")
 
 
@@ -1416,5 +1558,5 @@ def test_solar_panels(): # DEMO
 if __name__ == '__main__':
         
     #unittest.main()
-    test_solar_panels()
+    create_general_items()
     #test_achievements_38()

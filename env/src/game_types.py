@@ -169,6 +169,7 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
 
     AutomationSciencePack = "automation-science-pack", None
     MilitarySciencePack = "military-science-pack", None
+    LogisticsSciencePack = "logistic-science-pack", None
     ProductionSciencePack = "production-science-pack", None
     UtilitySciencePack = "utility-science-pack", None
     ChemicalSciencePack = "chemical-science-pack", None
