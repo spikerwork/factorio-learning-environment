@@ -42,7 +42,6 @@ The tool will raise exceptions in the following cases:
 - The prototype must be a valid Prototype or RecipeName enum value
 
 ## Notes
-- Always check that the recipe was successfully set by verifying the returned entity's recipe attribute
 - The tool uses the Factorio game engine's recipe system, so all standard game recipe rules apply
 - Recipes must be unlocked through research before they can be set
 

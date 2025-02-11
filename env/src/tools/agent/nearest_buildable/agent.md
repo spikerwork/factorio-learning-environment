@@ -45,7 +45,7 @@ factory_box = BuildingBox(height=5, width=10)
 ### 1. Basic Entity Placement
 ```python
 # Find place for chest near the origin
-chest_box = BuildingBox(height=1, width=1)
+chest_box = BuildingBox(height=Prototype.WoodenChest.HEIGHT, width=Prototype.WoodenChest.WIDTH)
 buildable_area = nearest_buildable(
     Prototype.WoodenChest,
     chest_box,
@@ -60,127 +60,37 @@ chest = place_entity(Prototype.WoodenChest, position=buildable_area.center())
 ### 2. Mining Drill Placement
 ```python
 # Setup mining drill on ore patch
-def place_mining_drill(resource_pos: Position):
-    # Define area for drill (3x3)
-    drill_box = BuildingBox(height=3, width=3)
-    
-    # Find buildable area
-    buildable_area = nearest_buildable(
-        Prototype.ElectricMiningDrill,
-        drill_box,
-        resource_pos
-    )
-    
-    # Place drill
-    move_to(buildable_area.center())
-    return place_entity(
-        Prototype.ElectricMiningDrill,
-        position=buildable_area.center()
-    )
+resource_pos = nearest(Resource.IronOre)
+# Define area for drill
+drill_box = BuildingBox(height=Prototype.ElectricMiningDrill.HEIGHT, width=Prototype.ElectricMiningDrill.WIDTH)
+
+# Find buildable area
+buildable_area = nearest_buildable(
+    Prototype.ElectricMiningDrill,
+    drill_box,
+    resource_pos
+)
+
+# Place drill
+move_to(buildable_area.center())
+drill = place_entity(
+    Prototype.ElectricMiningDrill,
+    position=buildable_area.center()
+)
 ```
 
 ### 3. Power Infrastructure
 ```python
-# Setup steam engine near water
-def place_steam_engine(water_pos: Position):
-    # Steam engine needs 3x5 area
-    engine_box = BuildingBox(width=5, height=3)
-    
-    buildable_area = nearest_buildable(
-        Prototype.SteamEngine,
-        engine_box,
-        water_pos
-    )
-    
-    move_to(buildable_area.center())
-    return place_entity(
-        Prototype.SteamEngine,
-        position=buildable_area.center(),
-        direction=Direction.RIGHT
-    )
-```
+# Setup boiler near a offshore_pump
+# assume a offshore pump exists at Position(15,8)
+offshore_pump = get_entity(Prototype.OffshorePump, Position(x = 15, y = 8))
+# add 4 to ensure no overlap
+building_box = BuildingBox(width = Prototype.Boiler.WIDTH + 4, height = Prototype.Boiler.HEIGHT + 4)
 
-## Best Practices
-
-1. **Size Planning**
-```python
-# Account for entity dimensions and spacing
-def get_building_box(entity_type: Prototype) -> BuildingBox:
-    sizes = {
-        Prototype.WoodenChest: (1, 1),
-        Prototype.ElectricMiningDrill: (3, 3),
-        Prototype.SteamEngine: (5, 3),
-        Prototype.AssemblingMachine1: (3, 3)
-    }
-    width, height = sizes.get(entity_type, (1, 1))
-    return BuildingBox(width=width, height=height)
-```
-
-2. **Resource Coverage**
-```python
-# For mining drills, ensure ore coverage
-def find_mining_position(ore_pos: Position):
-    try:
-        drill_box = BuildingBox(height=3, width=3)
-        area = nearest_buildable(
-            Prototype.ElectricMiningDrill,
-            drill_box,
-            ore_pos
-        )
-        return area.center()
-    except Exception:
-        print("No suitable mining position found")
-        return None
-```
-
-3. **Multiple Entity Placement**
-```python
-def place_drill_line(ore_pos: Position, count: int):
-    drills = []
-    current_pos = ore_pos
-    
-    for _ in range(count):
-        drill_box = BuildingBox(height=3, width=3)
-        area = nearest_buildable(
-            Prototype.ElectricMiningDrill,
-            drill_box,
-            current_pos
-        )
-        
-        move_to(area.center())
-        drill = place_entity(
-            Prototype.ElectricMiningDrill,
-            position=area.center()
-        )
-        drills.append(drill)
-        
-        # Update position for next search
-        current_pos = drill.position.right(3)
-    
-    return drills
-```
-
-## Error Handling
-
-1. **No Buildable Position**
-```python
-try:
-    area = nearest_buildable(entity, box, pos)
-except Exception as e:
-    print(f"Cannot find buildable position: {e}")
-    # Handle alternative placement strategy
-```
-
-2. **Resource Coverage**
-```python
-try:
-    area = nearest_buildable(
-        Prototype.ElectricMiningDrill,
-        BuildingBox(height=3, width=3),
-        ore_pos
-    )
-except Exception:
-    print("Not enough ore coverage for drill")
+coords = nearest_buildable(Prototype.Boiler, building_box, offshore_pump.position)
+# place the boiler at the centre coordinate
+boiler = place_entity(Prototype.Boiler, position = coords.center)
+print(f"Placed boiler to generate steam at {boiler.position}. This will be connected to the offshore pump at {offshore_pump.position}")
 ```
 
 ## Common Patterns
@@ -201,11 +111,11 @@ def plan_factory_section(center: Position, width: int, height: int):
         return None
 ```
 
-2. **Mining Outpost Setup**
+2. **Multiple Entity Placement**
 ```python
 def setup_mining_outpost(ore_pos: Position):
-    # Find area for multiple drills
-    drill_line = BuildingBox(width=9, height=3)  # Space for 3 drills
+    # Find area for multiple drills (3)
+    drill_line = BuildingBox(width=Prototype.ElectricMiningDrill.WIDTH * 3, height=Prototype.ElectricMiningDrill.HEIGHT)  # Space for 3 drills
     
     area = nearest_buildable(
         Prototype.ElectricMiningDrill,
@@ -217,7 +127,7 @@ def setup_mining_outpost(ore_pos: Position):
     drills = []
     for x in range(3):
         pos = Position(
-            x=area.left_top.x + (x * 3),
+            x=area.left_top.x + (x * Prototype.ElectricMiningDrill.WIDTH),
             y=area.left_top.y
         )
         move_to(pos)
@@ -230,20 +140,9 @@ def setup_mining_outpost(ore_pos: Position):
     return drills
 ```
 
-3. **Power Plant Layout**
-```python
-def plan_power_plant(water_pos: Position):
-    # Space for pump, boiler, and engine
-    plant_box = BuildingBox(width=15, height=5)
-    
-    area = nearest_buildable(
-        Prototype.SteamEngine,
-        plant_box,
-        water_pos
-    )
-    
-    return area
-```
+## Best practices
+- Always use Prototype.X.WIDTH and .HEIGHT to plan the buildingboxes
+- When doing power setups or setups with inserters, ensure the buildingbox is large enough to have room for connection types
 
 ## Troubleshooting
 
