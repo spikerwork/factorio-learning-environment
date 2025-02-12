@@ -9,7 +9,7 @@ import copy
 LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 50, "wooden-chest": 10, "burner-inserter": 50,"inserter": 50, "transport-belt": 500,
                                 "stone-furnace": 10, "boiler": 2, "offshore-pump": 2, "steam-engine": 2,
                                 "electric-mining-drill": 50, "small-electric-pole": 500, "pipe": 100,
-                                "assembling-machine-2": 10, "electric-furnace": 10}
+                                "assembling-machine-2": 10, "electric-furnace": 10, "solar-panel": 50}
 
 
 
@@ -25,17 +25,21 @@ class ThroughputTask(TaskABC):
     
     def verify(self, score: float, step: int, instance: FactorioInstance, step_statistics: Dict) -> bool:
         max_achieved_throughput = 0
+        max_achievements = None
         # wait the pre-holdout period
         instance.namespace.sleep(self.pre_holdout_wait_period)
         while True:
             result_list, result, error,  achievements = eval_program_with_achievements(program = f"sleep({self.holdout_wait_period})", instance=instance)
+            if max_achievements is None:
+                max_achievements = achievements
             dynamic_achievements = achievements["dynamic"]
             target_throughput = dynamic_achievements.get(self.throughput_entity, 0)
             if target_throughput > max_achieved_throughput:
                 max_achieved_throughput = target_throughput
+                max_achievements = achievements
             else:
                 break
-        return max_achieved_throughput >= self.quota, achievements
+        return max_achieved_throughput >= self.quota, max_achievements
             
     def _to_dict(self) -> Dict[str, Any]:
         return {
@@ -53,5 +57,7 @@ class ThroughputTask(TaskABC):
 
     def setup(self, instance):
         """setup function"""
+        instance.initial_inventory = self.starting_inventory
+        instance.reset()
         self.setup_instance(instance)
         self.starting_game_state = GameState.from_instance(instance)
