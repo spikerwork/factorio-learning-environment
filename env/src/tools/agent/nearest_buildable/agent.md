@@ -97,7 +97,7 @@ def plan_factory_section(center: Position, width: int, height: int):
 ```
 
 2. **Multiple Entity Placement**
-Example: Create a copper plate mining line with 3 drills
+Example: Create a copper plate mining line with 3 drills with inserters for future integration
 ```python
 # log your general idea what you will do next
 print(f"I will create a single line of 3 drills to mine copper ore")
@@ -126,6 +126,10 @@ for i in range(3):
     # We use the drill.direction as the direction, which will place it next to the drill covering the drop position 
     furnace = place_entity_next_to(Prototype.StoneFurnace, reference_position=drill.position, direction = drill.direction)
     print(f"Placed furnace at {furnace.position} to smelt the copper ore for drill {i} at {drill.position}")
+    # add inserters for future potential integartion
+    # use drill direction to continue the same line
+    inserter = place_entity_next_to(Prototype.Inserter, reference_position=furnace.position, direction = drill.direction)
+    print(f"Placed inserter at {inserter.position} to get the plates from furnace {i} at {furnace.position}")
 ```
 
 ## Best practices
