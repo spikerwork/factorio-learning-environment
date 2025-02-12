@@ -121,49 +121,6 @@ def _remove_numerical_keys(dictionary):
         pruned = parts
     return pruned
 
-# def _lua2python(command, response, *parameters, trace=False, start=0):
-#     if trace:
-#         print(command, parameters, response)
-#     if response:
-#         if trace:
-#             print(f"success: {command}")
-#         end = timer()
-#
-#         if response[0] != '{':
-#
-#             splitted = response.split("\n")[-1]
-#
-#             if "[string" in splitted:
-#                 a, b = splitted.split("[string")
-#                 splitted = a + '[\"' + b.replace('"', '!!')
-#                 # remove trailing ',} '
-#                 splitted = re.sub(r',\s*}\s*$', '', splitted) + "\"]}"
-#
-#             output = lua.decode(splitted)
-#         else:
-#             output = lua.decode(response)
-#
-#         ##output = luadata.unserialize(splitted[-1], encoding="utf-8", multival=False)
-#
-#         if trace:
-#             print("{hbar}\nCOMMAND: {command}\nPARAMETERS: {parameters}\n\n{response}\n\nOUTPUT:{output}"
-#                   .format(hbar="-" * 100, command=command, parameters=parameters, response=response, output=output))
-#
-#         # remove numerical keys
-#         if isinstance(output, dict) and 'b' in output:
-#             pruned = _remove_numerical_keys(output['b'])
-#             output['b'] = pruned
-#             # Only the last transmission is considered the output - the rest are just messages
-#         return output, (end - start)
-#     else:
-#         if trace:
-#             print(f"failure: {command} \t")
-#     end = timer()
-#
-#     try:
-#         return lua.decode(response), (end - start)
-#     except Exception as e:
-#         return None, (end - start)
 
 class LuaConversionError(Exception):
     """Custom exception for Lua conversion errors"""
@@ -186,6 +143,35 @@ def _check_output_for_errors(command, response, output):
 
 
 def _lua2python(command, response, *parameters, trace=False, start=0):
+    stdout = io.StringIO()
+
+    with contextlib.redirect_stdout(stdout):
+        if not response:
+            return None, (timer() - start)
+
+        try:
+            # Handle the case where response is a complete table
+            if response.strip().startswith('{') and response.strip().endswith('}'):
+                output = lua.decode(response)
+            else:
+                # Handle the case where we need to extract the last line
+                splitted = response.split("\n")[-1]
+                if "[string" in splitted:
+                    splitted = re.sub(r'\[string[^\]]*\]', '', splitted)
+                output = lua.decode(splitted)
+
+            if isinstance(output, dict) and 'b' in output:
+                output['b'] = _remove_numerical_keys(output['b'])
+
+            return output, (timer() - start)
+
+        except Exception as e:
+            if trace:
+                print(f"Parsing error: {str(e)}")
+            return None, (timer() - start)
+
+@deprecated("Doesn't handle nested structures that well")
+def _lua2python_old(command, response, *parameters, trace=False, start=0):
     # Capture stdout using StringIO
     stdout = io.StringIO()
 

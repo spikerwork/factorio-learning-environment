@@ -3,16 +3,18 @@ import asyncio
 import json
 from typing import List, Tuple, Optional
 import os
-from eval.open.model.conversation import Conversation, Message, GenerationParameters
-from eval.open.model.game_state import GameState
+from models.conversation import Conversation
+from models.message import Message
+from models.generation_parameters import GenerationParameters
+from models.game_state import GameState
 from eval.open.mcts.mcts import MCTS
-from eval.open.model.program import Program
+from models.program import Program
 from eval.open.mcts.planning_models import LanguageOutput, TaskOutput, InitialPlanOutput, PlanOutput, Step
 from tenacity import wait_exponential, retry
 
 
 def get_mining_setup(instance):
-        mining_setup = instance.get_entities()
+        mining_setup = instance.namespace.get_entities()
         if len(mining_setup) == 0:
             mining_setup = "There are no entities on the map"
         else:

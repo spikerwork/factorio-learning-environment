@@ -494,6 +494,9 @@ class Inserter(StaticEntity, Electric):
     _width: float = 1
     _height: float = 1
 
+class Filtered(BaseModel):
+    filter: Optional[Any] = None
+
 class UndergroundBelt(TransportBelt):
     """An underground section of transport belt."""
     is_input: bool
@@ -564,11 +567,13 @@ class MultiFluidHandler(StaticEntity):
     fluid_box: Optional[Union[dict, list]] = []
     fluid_systems: Optional[Union[dict, list]] = []
 
+class FilterInserter(Inserter, Filtered):
+    """A inserter that only moves specific items"""
+
 class ChemicalPlant(MultiFluidHandler, AssemblingMachine):
     """Represents a chemical plant that processes fluid recipes."""
     _height: float = 3
     _width: float = 3
-    pass
 
 
 class OilRefinery(MultiFluidHandler, AssemblingMachine):
@@ -706,7 +711,6 @@ class Reactor(StaticEntity):
     """A nuclear reactor"""
     _height: float = 5
     _width: float = 5
-    pass
 
 class EntityGroup(BaseModel):
     id: int

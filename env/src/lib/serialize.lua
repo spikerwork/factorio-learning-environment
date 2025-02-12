@@ -626,6 +626,16 @@ function get_entity_direction(entity, direction)
         else
             return defines.direction.west
         end
+    elseif prototype.type == "storage-tank" then
+        if direction == 0 then
+            return defines.direction.north
+        elseif direction == 1 then
+            return defines.direction.east -- Only 2 directions
+        elseif direction == 2 then
+            return defines.direction.south -- Only 2 directions
+        else
+            return defines.direction.west -- Only 2 directions
+        end
     else
         return direction
     end
@@ -818,7 +828,7 @@ global.utils.serialize_entity = function(entity)
         health = entity.health,
         energy = entity.energy,
         type = "\""..entity.type.."\"",
-        status = global.entity_status_names[entity.status] or "normal",
+        status = global.entity_status_names[entity.status] or "\"normal\"",
     }
 
     if entity.grid then
@@ -1039,7 +1049,7 @@ global.utils.serialize_entity = function(entity)
         local is_full = not line1.can_insert_at_back() and not line2.can_insert_at_back()
 
         serialized.belt_status = {
-            status = is_full and "full_output" or "normal"
+            status = is_full and "\"full_output\"" or "\"normal\""
         }
 
         -- Get and merge contents from both lines
@@ -1493,19 +1503,19 @@ global.utils.serialize_entity = function(entity)
         serialized.connection_points = {}
 
         -- Assembling machine connection points are similar to chemical plants
-        if direction == defines.direction.north then
+        if entity.direction == defines.direction.north then
             table.insert(serialized.connection_points,
                     {x = x, y = y - 2
                     })
-        elseif direction == defines.direction.south then
+        elseif entity.direction == defines.direction.south then
             table.insert(serialized.connection_points,
                     {x = x, y = y + 2
                     })
-        elseif direction == defines.direction.east then
+        elseif entity.direction == defines.direction.east then
             table.insert(serialized.connection_points,
-                    {x = x + 2, y
+                    {x = x + 2, y = y
                     })
-        elseif direction == defines.direction.west then
+        elseif entity.direction == defines.direction.west then
             table.insert(serialized.connection_points,
                     {x = x - 2, y = y
                     })
@@ -1514,6 +1524,7 @@ global.utils.serialize_entity = function(entity)
         -- Filter out any invalid connection points
         local filtered_connection_points = {}
         for _, point in ipairs(serialized.connection_points) do
+            game.print(serpent.line(point))
             if global.utils.is_valid_connection_point(game.surfaces[1], point) then
                 table.insert(filtered_connection_points, point)
             end
@@ -1597,7 +1608,7 @@ global.utils.serialize_entity = function(entity)
 
         -- Add mining status
         if #resources_array == 0 then
-            serialized.status = "no_minable_resources"
+            serialized.status = "\"no_minable_resources\""
             if not serialized.warnings then serialized.warnings = {} end
             table.insert(serialized.warnings, "\"nothing to mine\"")
         end
@@ -1693,13 +1704,13 @@ global.utils.serialize_entity = function(entity)
         -- Update status based on rocket state
         if serialized.rocket then
             if serialized.rocket.launch_progress > 0 then
-                serialized.status = "launching_rocket"
+                serialized.status = "\"launching_rocket\""
             elseif serialized.rocket.payload then
-                serialized.status = "waiting_to_launch_rocket"
+                serialized.status = "\"waiting_to_launch_rocket\""
             end
         elseif serialized.rocket_parts < 100 then
             if serialized.rocket_parts > 0 then
-                serialized.status = "preparing_rocket_for_launch"
+                serialized.status = "\"preparing_rocket_for_launch\""
             end
         end
 
@@ -1709,7 +1720,7 @@ global.utils.serialize_entity = function(entity)
         end
         if serialized.rocket_parts < 100 and serialized.rocket_parts > 0 then
             table.insert(serialized.warnings, "\"waiting for rocket parts\"")
-        elseif serialized.status == "waiting_to_launch_rocket" then
+        elseif serialized.status == "\"waiting_to_launch_rocket\"" then
             table.insert(serialized.warnings, "\"ready to launch\"")
         end
     end
@@ -1776,7 +1787,7 @@ global.utils.serialize_entity = function(entity)
     if is_fluid_handler(entity.type) then
         -- Check if the entity has a fluidbox
         if not entity.fluidbox or #entity.fluidbox == 0 then
-            serialized.status = "not_connected"
+            serialized.status = "\"not_connected\""
             if not serialized.warnings then
                 serialized.warnings = {}
             end

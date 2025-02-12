@@ -8,17 +8,18 @@ from dataclasses import dataclass
 from rich.console import Console
 from tenacity import retry, wait_exponential
 import copy
-from eval.open.model.conversation import Conversation, GenerationParameters
-from eval.open.mcts.formatters.conversation_formatter import DefaultFormatter
+from models.conversation import Conversation
+from models.generation_parameters import GenerationParameters
+from agents.utils.formatters.conversation_formatter_abc import DefaultFormatter
 from eval.open.db_client import DBClient
-from eval.open.factorio_evaluator import FactorioEvaluator
+from eval.evaluator import Evaluator
 from eval.open.mcts.grouped_logger import GroupedFactorioLogger
 from eval.open.mcts.parallel_supervised_config import SupervisedExecutorConfig
 from eval.open.mcts.planning_models import PlanOutput, TaskOutput, Step, LanguageOutput, InitialPlanOutput
-from eval.open.model.game_state import GameState
-from eval.open.model.program import Program
-from instance import FactorioInstance
-from eval.tasks import TaskConfig
+from models.game_state import GameState
+from models.program import Program
+from env.src.instance import FactorioInstance
+from eval.tasks.task_abc import TaskABC
 logger = logging.basicConfig(level=logging.INFO)
 from abc import ABC, abstractmethod
 
@@ -26,7 +27,7 @@ from abc import ABC, abstractmethod
 @dataclass
 class PlanningGroupV2:
     group_id: int
-    evaluator: FactorioEvaluator
+    evaluator: Evaluator
     active_instances: List[FactorioInstance]
     plans: Dict[int, PlanOutput] = None
 
@@ -65,14 +66,12 @@ class SupervisedTaskExecutorABC(ABC):
         self.logger = GroupedFactorioLogger(
             n_groups=config.n_parallel,
             instances_per_group=instances_per_group,
-            holdout_exists=False
 
         )
         self.logger.start()
         
         # Create instance groups
         self.instance_groups = self._create_instance_groups(instances)
-        self.api_description = self.instance_groups[0].evaluator.instances[0].get_system_prompt()
 
     def read_in_prompts(self, path):
         system_prompt_path = os.path.join(path, "system_prompt.md")
@@ -99,12 +98,11 @@ class SupervisedTaskExecutorABC(ABC):
             active_instances = group_instances
 
             # Create evaluator for this group
-            evaluator = FactorioEvaluator(
+            evaluator = Evaluator(
                 db_client=self.db_client,
                 instances=group_instances,
                 value_accrual_time=3,
                 logger=self.logger,
-                include_holdout=False
             )
 
             groups.append(PlanningGroupV2(
@@ -130,7 +128,7 @@ class SupervisedTaskExecutorABC(ABC):
             )
 
     async def search_supervised(self, n_iterations: int, 
-                                task: TaskConfig, 
+                                task: TaskABC, 
                                 skip_failures: bool = False,
                                 run_id: str = ""):
         """
@@ -167,7 +165,7 @@ class SupervisedTaskExecutorABC(ABC):
             return results
 
 
-    async def generate_plans(self, task: TaskConfig, nr_of_beams: int) -> List[InitialPlanOutput]:
+    async def generate_plans(self, task: TaskABC, nr_of_beams: int) -> List[InitialPlanOutput]:
         
         plan_outputs = {}
         for idx in range(nr_of_beams):
@@ -178,7 +176,7 @@ class SupervisedTaskExecutorABC(ABC):
         return plan_outputs
     
     @abstractmethod
-    async def _run_group_search(self, group: PlanningGroupV2, task: TaskConfig, n_iterations: int, skip_failures: bool = False):
+    async def _run_group_search(self, group: PlanningGroupV2, task: TaskABC, n_iterations: int, skip_failures: bool = False):
         """Run parallel planning search across all groups"""
         """
         Need to check again over what to do mcts exactly
@@ -288,7 +286,7 @@ class SupervisedTaskExecutorABC(ABC):
     
 
     def check_for_task_completion(self, 
-                                  task: TaskConfig,
+                                  task: TaskABC,
                                   plan: PlanOutput,
                                   group: PlanningGroupV2) -> bool:
         sleep_seconds = 60
@@ -328,7 +326,7 @@ class SupervisedTaskExecutorABC(ABC):
 
     def _create_output_completed_program(self, plan: PlanOutput,
                                  parent_id: Optional[int],
-                                 task: TaskConfig,
+                                 task: TaskABC,
                                  group: PlanningGroupV2) -> PlanOutput:
         if task.check_for_completion:
             check_result, post_production_flows = self.check_for_task_completion(task, plan, group)

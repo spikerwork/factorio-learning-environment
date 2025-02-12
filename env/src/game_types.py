@@ -45,9 +45,6 @@ class RecipeName(enum.Enum):
 
 
 class PrototypeMetaclass(enum.EnumMeta):
-    def __repr__(self):
-        return self
-    
     def __getattr__(cls, name):
         try:
             attr =  super().__getattr__(name)
@@ -75,14 +72,11 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     BurnerInserter = "burner-inserter", BurnerInserter
     FastInserter = "fast-inserter", Inserter
     ExpressInserter = "express-inserter", Inserter
-
-    LongHandedInserter = "long-handed-inserter", Inserter  # TODO
-    StackInserter = "stack-inserter", Inserter  # TODO
-    StackFilterInserter = "stack-filter-inserter", Inserter  # TODO
-    FilterInserter = "filter-inserter", Inserter  # TODO
-
+    LongHandedInserter = "long-handed-inserter", Inserter
+    StackInserter = "stack-inserter", Inserter
+    StackFilterInserter = "stack-filter-inserter", FilterInserter
+    FilterInserter = "filter-inserter", FilterInserter
     Inserter = "inserter", Inserter
-
 
     BurnerMiningDrill = "burner-mining-drill", BurnerMiningDrill
     ElectricMiningDrill = "electric-mining-drill", ElectricMiningDrill
@@ -148,6 +142,7 @@ class Prototype(enum.Enum, metaclass=PrototypeMetaclass):
     SulfuricAcid = "sulfuric-acid", None
     Uranium235 = "uranium-235", None
     Uranium238 = "uranium-238", None
+    Concrete = "concrete", None
 
     Lubricant = "lubricant", None
     AdvancedOilProcessing = "advanced-oil-processing", None # These are recipes, not prototypes.
