@@ -27,20 +27,10 @@ can_place = can_place_entity(
 # Check before attempting to place large entities
 target_pos = Position(x=10, y=10)
 move_to(target_pos)
-if can_place_entity(Prototype.SteamEngine, position=target_pos):
-    place_entity(Prototype.SteamEngine, position=target_pos)
+if can_place_entity(Prototype.SteamEngine, position=target_pos, direction=Direction.DOWN):
+    place_entity(Prototype.SteamEngine, position=target_pos, direction=Direction.DOWN)
 else:
     print("Cannot place steam engine at target position")
-```
-
-2. Check with direction:
-```python
-# Check if we can place a mining drill facing down
-can_place = can_place_entity(
-    Prototype.BurnerMiningDrill,
-    direction=Direction.DOWN,
-    position=Position(x=0, y=0)
-)
 ```
 
 ## Important Considerations

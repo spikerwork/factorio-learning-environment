@@ -27,8 +27,8 @@ print(f"Rotated inserter: pickup={inserter.pickup_position}, drop={inserter.drop
 
 ## Entity-Specific Behaviors
 
-### 3. Assembling Machines
-Always need to set the recipe for assembling machines as the machine behaviour differs with recipes
+### 1. Assembling Machines, Oil refineris and Chemical Cplants
+Always need to set the recipe for assembling machines, oil refineries and chemical plants as their behaviour differs with recipes
 ```python
 # Must set recipe before rotating
 assembler = place_entity(Prototype.AssemblingMachine1, position=pos)
@@ -46,40 +46,7 @@ assembler = rotate_entity(assembler, Direction.RIGHT)
 
 ## Common Use Cases
 
-1. **Production Line Setup**
-```python
-# Place and orient machines
-assembler = place_entity(
-    Prototype.AssemblingMachine1,
-    position=pos
-)
-assembler = set_entity_recipe(
-    assembler,
-    Prototype.IronGearWheel
-)
-print(f"Put assembler to create iron gear wheels at {assembler.position}")
-# Orient input inserter
-input_inserter = place_entity_next_to(
-    Prototype.BurnerInserter,
-    assembler.position,
-    Direction.LEFT
-)
-input_inserter = rotate_entity(
-    input_inserter,
-    Direction.RIGHT  # Face assembler
-)
-print(f"Put input inserter to input items into assembler at {input_inserter.position}")
-# Orient output inserter
-# Dont need to rotate here as it is taking from the assembler
-output_inserter = place_entity_next_to(
-    Prototype.BurnerInserter,
-    assembler.position,
-    Direction.RIGHT
-)
-print(f"Put output inserter to get items from assembler at {output_inserter.position}")
-```
-
-2. **Smelting Setup**
+1. **Smelting Setup**
 ```python
 # Place furnace
 furnace = place_entity(

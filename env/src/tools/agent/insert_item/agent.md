@@ -63,9 +63,6 @@ furnace = insert_item(Prototype.IronOre, furnace, 50)
 ```python
 # Correct - inserting fuel
 inserter = insert_item(Prototype.Coal, burner_inserter, 10)
-
-# Wrong - will raise error
-inserter = insert_item(Prototype.IronOre, burner_inserter, 10)
 ```
 
 ### 3. Assembling Machines
@@ -98,31 +95,3 @@ for pos in furnace_positions:
     # Add ore
     furnace = insert_item(Prototype.IronOre, furnace, 50)
 ```
-
-## Troubleshooting
-
-Common issues and solutions:
-
-1. "Entity is too far away"
-   - Move closer to target entity
-   - Check distance is within 10 tiles
-   - Verify entity position
-
-2. "Failed to insert items"
-   - Check target entity accepts item type
-   - Verify entity has space
-   - Ensure correct recipe is set (for assemblers)
-
-3. "Cannot insert X into Y"
-   - Check item compatibility
-   - Verify entity type accepts item
-   - Check for conflicting items (furnaces)
-
-## Integration with Other Tools
-
-The insert_item tool works well with:
-
-1. `place_entity()` - Setting up new machines
-2. `set_entity_recipe()` - Configuring assemblers
-3. `connect_entities()` - Creating belt systems
-4. `inspect_inventory()` - Managing resources

@@ -70,18 +70,14 @@ Pipes connect fluid-handling entities:
 # Water to steam setup
 offshore_pump = get_entity(Prototype.OffshorePump, Position(x= 10, y = 0))
 boiler = get_entity(Prototype.Boiler, Position(x= 0, y = 0))
-steam_engine = get_entity(Prototype.SteamEngine, Position(x= 10, y = -10))
 
 # Connect water flow
 water_pipes = connect_entities(offshore_pump, boiler, Prototype.Pipe)
 print(f"Connected offshore_pump at {offshore_pump.position} to boiler at {boiler.position} with {pipes}")
-steam_pipes = connect_entities(boiler, steam_engine, Prototype.Pipe)
-print(f"Connected boiler at {boiler.position} to steam_engine at {steam_engine.position} with {pipes}")
 ```
 
 Key points:
 - Respects fluid input/output connection points
-- Maintains fluid networks
 - Underground pipes have limited range
 - Pipe groups track fluid system IDs
 
@@ -118,15 +114,6 @@ inventory = inspect_inventory()
 # use get_connection_amount to see if you have enough
 required_count = get_connection_amount(source.position, target.position, connection_type=Prototype.TransportBelt)
 assert inventory[Prototype.TransportBelt] >= required_count
-```
-
-2. **Error Handling**
-```python
-try:
-    connection = connect_entities(source, target, connection_type=prototype)
-except Exception as e:
-    print(f"Connection failed: {e}")
-    # Handle failure case
 ```
 
 3. **Entity Groups**
@@ -199,34 +186,6 @@ main_power_connection = connect_entities(drill_2,
                                 Prototype.SmallElectricPole)
 ```
 
-### Resource Mining Setup
-```python
-# Find resource and place drill
-ore_pos = nearest(Resource.IronOre)
-move_to(ore_pos)
-drill = place_entity(Prototype.BurnerMiningDrill, ore_pos)
-
-# Place chest for collection
-chest = place_entity_next_to(Prototype.WoodenChest, drill.position)
-# add a inserter
-destination_inserter = place_entity_next_to(Prototype.BurnerInserter, 
-                                           reference_position=chest.position,
-                                           direction=Direction.RIGHT,
-                                           spacing=0)
-# Always need to rotate inserters to input into the entity
-# By default it takes from entity and not inputs into it
-destination_inserter = rotate_entity(destination_inserter, Direction.LEFT) 
-print(f"Placed inserter at {destination_inserter.position} to feed the furnace at {destination_furnace.position}")
-
-# Connect with transport belt
-belts = connect_entities(
-    drill,
-    chest_inserter,
-    Prototype.TransportBelt
-)
-print(f"Connected drill at {drill.position} to the chest at  {chest.position}: {belts}")
-```
-
 ## Troubleshooting
 
 Common issues and solutions:
@@ -235,18 +194,11 @@ Common issues and solutions:
 - Verify inventory has required entities
 - Ensure compatible connection types
 
-### 2. Flow Issues
-- Check entity rotations
-- Verify pickup/drop positions
-- Ensure power/fuel requirements met
-- Validate network connections
-
-### 3. Performance
+### 2. Performance
 - Use underground variants for long distances
-- Minimize path complexity
 - Clean up unused connections
 
-### 4. Entity Groups
+### 3. Entity Groups
 - Update stale group references
 - Handle group merging properly
 - Track network IDs

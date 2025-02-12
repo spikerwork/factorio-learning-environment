@@ -37,7 +37,7 @@ inserter = place_entity(
     position=Position(x=5, y=5)
 )
 # log your actions
-print(f"Placed inserter at {inserter.position}")
+print(f"Placed inserter at {inserter.position} to input into a chest")
 move_to(water_pos)
 # Flexible positioning
 pump = place_entity(
@@ -45,7 +45,7 @@ pump = place_entity(
     position=water_pos
 )
 # log your actions
-print(f"Placed pump at {pump.position}")
+print(f"Placed pump at {pump.position}to generate power")
 ```
 
 ### Mining Drills
@@ -59,7 +59,7 @@ drill = place_entity(
     direction=Direction.DOWN
 )
 # log your actions
-print(f"Placed drill at {drill.position}")
+print(f"Placed drill at {drill.position} to mine iron ore")
 ```
 
 ## Best Practices
@@ -68,7 +68,7 @@ print(f"Placed drill at {drill.position}")
 ## Common Patterns
 
 1. **Mining Setup**
-You can put chests directly at the drop positions of drills to caths ore, thus creating automatic drilling lines
+You can put chests directly at the drop positions of drills to catch ore, thus creating automatic drilling lines
 ```python
 def setup_mining(resource_pos: Position):
     move_to(resource_pos)
@@ -90,26 +90,3 @@ def setup_mining(resource_pos: Position):
     print(f"Placed chest to catch iron ore at {chest.position}")
     return drill, chest
 ```
-
-## Special Considerations
-
-1. **Entity Dimensions**
-```python
-# Account for entity size
-def get_clear_position(entity: Prototype, pos: Position):
-    building_box = BuildingBox(
-        width=Prototype.WIDTH,  # Adjust based on entity
-        height=Prototype.HEIGHT
-    )
-    area = nearest_buildable(entity, building_box, pos)
-    return area.center()
-```
-
-## Integration with Other Tools
-
-The place_entity tool works well with:
-
-1. `move_to()` - Positioning before placement. Always need to move before placement
-2. `nearest()` - Finding resources for placement
-3. `inspect_inventory()` - Verifying available items
-4. `nearest_buildable()` - Finding valid positions

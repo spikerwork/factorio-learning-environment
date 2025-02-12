@@ -24,34 +24,16 @@ new_pos = move_to(Position(x=10, y=10))
 coal_pos = nearest(Resource.Coal)
 move_to(coal_pos)
 ```
-
-## Important Rules
-
-1. **Error Handling**
-```python
-try:
-    move_to(position)
-except Exception as e:
-    print(f"Movement failed: {e}")
-```
-
 ## Movement Patterns
 
 ### 1. Resource Navigation
 ```python
-# Find and move to resources
-def move_to_resource(resource_type: Resource):
-    resource_pos = nearest(resource_type)
-    move_to(resource_pos)
-    
-# Usage
-move_to_resource(Resource.IronOre)
+move_to(nearest(IronOre))
 ```
 
 ### 2. Move before placing
 always need to move to the position where you need to place the entity
 ```python
-# Move through multiple points
 move_to(Position(x = 0, y = 0))
 chest = place_entity(Prototypw.WoodenChest, position = Position(x = 0, y = 0))
 ```

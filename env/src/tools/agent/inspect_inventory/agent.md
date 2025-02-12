@@ -79,35 +79,13 @@ if inventory[Prototype.IronPlate] >= 5:
     craft_item(Prototype.IronGearWheel)
 ```
 
-2. **Verify Resource Availability**
-```python
-# Check if you have enough resources
-inventory = inspect_inventory()
-required_items = {
-    Prototype.IronPlate: 10,
-    Prototype.Coal: 5
-}
-
-has_all = all(inventory.get(item, 0) >= amount 
-             for item, amount in required_items.items())
-```
-
-### 3. Labs
+### 2. Labs
 ```python
 lab = place_entity(Prototype.Lab, position=pos)
 lab_inventory = inspect_inventory(entity=lab)
 # Returns science pack inventory
 ```
 
-## Error Handling
-
-1. **Handle Missing Entities**
-```python
-try:
-    inventory = inspect_inventory(entity=position)
-except Exception as e:
-    print(f"Could not inspect inventory: {e}")
-```
 ## Common Patterns
 
 1. **Fuel Monitoring Pattern**

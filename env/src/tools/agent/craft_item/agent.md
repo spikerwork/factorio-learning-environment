@@ -44,12 +44,6 @@ Before crafting, ensure:
 2. Required technologies are researched
 3. The item is craftable by hand (some items require machines)
 
-### Error Handling
-The tool provides detailed error messages for common issues:
-- Insufficient resources
-- Missing technology requirements
-- Uncraftable items
-- Recursive crafting loops
 
 ## Examples
 
@@ -61,23 +55,3 @@ craft_item(Prototype.IronChest, quantity=5)
 # Craft 20 copper cables (requires 10 copper plates)
 craft_item(Prototype.CopperCable, quantity=20)
 ```
-## Common Errors and Solutions
-
-### "Recipe is not unlocked yet"
-- **Cause**: Required technology hasn't been researched
-- **Solution**: Research the necessary technology first
-
-### "Cannot be crafted"
-- **Cause**: Item requires a machine (e.g., furnace or assembling machine) or is a raw resource
-- **Solution**: Use appropriate manufacturing facility or harvesting instead of hand crafting
-
-### "Missing ingredients"
-- **Cause**: Insufficient resources in inventory
-- **Solution**: Gather or craft required resources first
-
-## Integration with Other Tools
-
-The craft tool works well with:
-- `inspect_inventory` - Check resource availability
-- `harvest_resource` - Gather raw materials
-- Research tools - Unlock new crafting recipes

@@ -56,7 +56,7 @@ except Exception as e:
     print("No coal within 500 tiles")
 ```
 
-3. **Water Finding**
+2. **Water Finding**
 ```python
 # Water positions are tile-based
 water_pos = nearest(Resource.Water)

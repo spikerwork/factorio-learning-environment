@@ -47,8 +47,8 @@ class ConnectEntities(Tool):
     def _setup_resolvers(self):
         self.resolvers = {
             ConnectionType.FLUID: FluidConnectionResolver(self.get_entities),
-            ConnectionType.TRANSPORT: TransportConnectionResolver(),
-            ConnectionType.POWER: PowerConnectionResolver(),
+            ConnectionType.TRANSPORT: TransportConnectionResolver(self.get_entities),
+            ConnectionType.POWER: PowerConnectionResolver(self.get_entities),
             ConnectionType.WALL: Resolver(self.get_entities)
         }
 
@@ -161,7 +161,7 @@ class ConnectEntities(Tool):
 
         raise Exception(
             f"Failed to connect {set([type.name for type in connection_types])} from {source.name} at {source.position} to {target.name} at {target.position}. "
-            f"{self.get_error_message(str(last_exception))}"
+            f"{self.get_error_message(str(last_exception))}. Check if the starting and end positions are valid and reachable."
         )
 
     def _resolve_position_into_entity(self, position: Position):

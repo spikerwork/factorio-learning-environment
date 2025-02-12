@@ -64,16 +64,6 @@ water_patch = get_resource_patch(
 print(f"Water area contains {water_patch.size} tiles")
 ```
 
-### 3. Wood (Trees)
-```python
-# Check wood resources
-wood_patch = get_resource_patch(
-    Resource.Wood,
-    position=Position(x=0, y=0)
-)
-print(f"Estimated {wood_patch.size} wood available")
-```
-
 ## Common Use Cases
 
 ### 1. Mining Site Planning
@@ -94,21 +84,4 @@ def plan_mining_site(resource_type, position):
         'miners_needed': miners_needed,
         'dimensions': (width, height)
     }
-```
-
-## Best Practices
-1. **Efficient Search**
-```python
-def find_optimal_patch(resource_type, min_size):
-    # Start with small radius
-    radius = 10
-    while radius <= 50:  # Maximum search radius
-        try:
-            patch = get_resource_patch(resource_type, position, radius)
-            if patch.size >= min_size:
-                return patch
-        except Exception:
-            pass
-        radius += 10
-    return None
 ```

@@ -34,42 +34,13 @@ inserter = place_entity_next_to(
 ```
 
 ## Common Entity Combinations
-
-### 1. Mining Setup
-Create a automatic copper ore smelting setup
+### 1. Getting items from a chemical plant
 ```python
-# Place furnace next to mining drill
-def setup_mining_outpost():
-    # Place drill on ore
-    drill = place_entity(
-        Prototype.BurnerMiningDrill, 
-        position=ore_position
-    )
-    # log your actions
-    print(f"Placed drill at {drill.position} to mine copper ore")
-    # insert coal to drill
-    drill = insert_item(Prototype.Coal, drill, quantity = 10)
-    # Place furnace next to drill's drop position to catch and smelt the ore
-    furnace = place_entity_next_to(
-        Prototype.StoneFurnace,
-        reference_position=drill.drop_position,
-        direction=Direction.DOWN,
-        spacing=0
-    )
-    # insert coal to furnace
-    furnace = insert_item(Prototype.Coal, furnace, quantity = 10)
-    # log your actions
-    print(f"Placed furnace at {furnace.position} to smelt copper ore into plates")
-    return drill, furnace
-```
-
-### 3. Assembly Line
-```python
-def create_assembly_line(assembler):
+def create_assembly_line(chemical_plant):
     # Place inserter next to machine to take items from it
     output_inserter = place_entity_next_to(
         Prototype.BurnerInserter,
-        assembler.position,
+        chemical_plant.position,
         direction=Direction.LEFT,
         spacing=0
     )
@@ -81,7 +52,7 @@ def create_assembly_line(assembler):
         position = output_inserter.position,
     )
     # log your actions
-    print(f"Placed chest at {output_chest.position} to get items from assembly machine at {assembler.position}. Inserter that puts items into the chest is at {output_inserter.position}")
+    print(f"Placed chest at {output_chest.position} to get items from a chemical_plant at {chemical_plant.position}. Inserter that puts items into the chest is at {output_inserter.position}")
 ```
 
 ## Entity-Specific Considerations

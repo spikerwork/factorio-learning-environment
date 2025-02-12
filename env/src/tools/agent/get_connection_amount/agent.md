@@ -53,17 +53,6 @@ pole_count = get_connection_amount(
 print(f"Need {pole_count} small electric poles to connect power")
 ```
 
-### 3. Fluid Systems Design
-```python
-# Plan pipe connections
-pipe_count = get_connection_amount(
-    offshore_pump,
-    boiler,
-    connection_type=Prototype.Pipe
-)
-
-print(f"Pipeline requires {pipe_count} pipes")
-```
 
 ## Tips for Effective Usage
 
@@ -72,7 +61,7 @@ print(f"Pipeline requires {pipe_count} pipes")
    - Check inventory availability
    - Consider alternative paths if count is too high
 
-4. **Resource management**
+2. **Resource management**
    - Calculate total requirements upfront
    - Include buffer for repairs/changes
    - Consider alternative connection types
