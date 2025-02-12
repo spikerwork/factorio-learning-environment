@@ -127,38 +127,31 @@ def initiate_task_configs(input_task):
     task_config = ThroughputTask(**input_task["config"])
     return task_config
 
-def initialise_starting_state(instance, task, reset_game_state):
-    # reset the instance
-    instance.reset(reset_game_state)
+def initialise_starting_state(instance, task):
     # reset the game state but with the new inventory
     task.setup(instance)
     return task
 
-
-def get_starting_state(instance, config, starting_scenario_folder, reset_game_state):
-    # reset the game state but with the new inventory
-    reset_game_state_copy = copy.deepcopy(reset_game_state)
-    reset_game_state_copy.inventory = config.starting_inventory
-    instance.reset(reset_game_state_copy)
-    print(instance.namespace.inspect_inventory())
-    if config.starting_setup_code_location is None:
-        starting_game_state = GameState.from_instance(instance)
-        config.starting_game_state = starting_game_state
-        return config
-    # get the starting code folder path
-    starting_code_folder = os.path.join(starting_scenario_folder, config.starting_setup_code_location)
-    # read in the starting code
-    with open(starting_code_folder, "r") as f:
-        starting_code = f.read()
-    # execute the starting code
-    output_list, result, error, achievements = eval_program_with_achievements(instance, starting_code)
-    # get the game state
-    starting_game_state = GameState.from_instance(instance)
-    config.starting_game_state = starting_game_state
-    config.starting_scenario_code = starting_code
-    config.starting_scenario_logs = result
-    return config
-
+def construct_manual(master_tool_path):
+    agent_tool_path = os.path.join(master_tool_path, "agent")
+    # get all the folders in tool_paths
+    tool_folders = [f for f in os.listdir(agent_tool_path) if os.path.isdir(os.path.join(agent_tool_path, f))]
+    manual = "Instructions for tools available to you\n\n"
+    for folder in tool_folders:
+        # check if it has a agent.md file
+        agent_path = os.path.join(agent_tool_path, folder, "agent.md")
+        if os.path.exists(agent_path):
+            with open(agent_path, "r") as f:
+                manual += f"## {folder} instructions\n"
+                manual += f.read()
+                manual += "\n\n"
+        else:
+            continue
+    # read in the agent.md in master_tool_path
+    with open(os.path.join(master_tool_path, "agent.md"), "r") as f:
+        manual += f"## General useful patterns\n"
+        manual += f.read()
+    return manual
 def create_factorio_instance(instance_id: int) -> FactorioInstance:
     """Create a single Factorio instance"""
     ips, udp_ports, tcp_ports = get_local_container_ips()
@@ -170,7 +163,7 @@ def create_factorio_instance(instance_id: int) -> FactorioInstance:
         fast=True,
         cache_scripts=True,
         inventory={},
-        all_technologies_researched=False
+        all_technologies_researched=True
     )
     instance.speed(10)
     return instance
@@ -232,8 +225,8 @@ OBSERVATION_SPACE = \
     
     This response indicates that `print(get_entities())` was called at line 78 to get state of the entities on the map. There are four stone furnaces, two of which are working and two of which have no ingredients to smelt. Non-working entities can be determined by checking the `warnings` and `status` fields."""
 
-with open("eval\open\MANUAL_short.md", "r") as f:
-    MANUAL = f.read()
+#with open("eval\open\MANUAL_short.md", "r") as f:
+#    MANUAL = f.read()
 
 
 async def main():
@@ -261,7 +254,8 @@ async def main():
         print(
             "\033[91mError initialising Factorio instances. Are the docker containers running, and have they been activated?\033[91m")
         return
-    
+    master_tool_path = r"env\src\tools"
+    MANUAL = construct_manual(master_tool_path)
     API_SCHEMA = instances[0].get_system_prompt()
     prompt = SYSTEM_PROMPT + '\n\n' + API_SCHEMA + '\n\nObservations:\n' + OBSERVATION_SPACE + '\n\n' + MANUAL + '\n```'
     zero_state = GameState.from_instance(instances[0])
@@ -279,7 +273,7 @@ async def main():
 
     task_folder = r"eval\tasks\task_definitions"
     result_path = r"eval\tasks\supervised_results"
-    tasks = ["steel_plate_populated_16"]
+    tasks = ["iron_gear_wheel_throughput_16"]
     search_type = "beam_supervised"
     search_iterations = 1
 
@@ -311,7 +305,7 @@ async def main():
         with open(os.path.join(task_folder, f"{task_key}.json"), "r") as f:
             input_task = json.load(f)
         task = initiate_task_configs(input_task)
-        task = initialise_starting_state(instances[0], task, zero_state)
+        task = initialise_starting_state(instances[0], task)
         config_dict = {"iterations": search_iterations,
                    "executor_kwargs": executor.config._to_dict(),
                    "task_config": task._to_dict()}
