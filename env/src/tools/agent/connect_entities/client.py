@@ -47,8 +47,8 @@ class ConnectEntities(Tool):
     def _setup_resolvers(self):
         self.resolvers = {
             ConnectionType.FLUID: FluidConnectionResolver(self.get_entities),
-            ConnectionType.TRANSPORT: TransportConnectionResolver(),
-            ConnectionType.POWER: PowerConnectionResolver(),
+            ConnectionType.TRANSPORT: TransportConnectionResolver(self.get_entities),
+            ConnectionType.POWER: PowerConnectionResolver(self.get_entities),
             ConnectionType.WALL: Resolver(self.get_entities)
         }
 
@@ -160,12 +160,12 @@ class ConnectEntities(Tool):
         target_pos = target.position if not isinstance(target, Position) else target
 
         raise Exception(
-            f"Failed to connect {set([type.name for type in connection_types])} from {source_pos} to {target_pos}. "
-            f"{self.get_error_message(str(last_exception))}"
+            f"Failed to connect {set([type.name for type in connection_types])} from {source.name} at {source.position} to {target.name} at {target.position}. "
+            f"{self.get_error_message(str(last_exception))}. Check if the starting and end positions are valid and reachable."
         )
 
     def _resolve_position_into_entity(self, position: Position):
-        entities = self.get_entities(position=position, radius=0.5)
+        entities = self.get_entities(position=position, radius=0)
         if not entities:
             return position
         if isinstance(entities[0], EntityGroup):
@@ -336,7 +336,7 @@ class ConnectEntities(Tool):
 
         if not result.is_success:
             raise Exception(
-               # f"Failed to connect {connection_prototype} from {source_pos} to {target_pos}. "
+                f"Failed to connect {connection_prototype} from {source_pos} to {target_pos}. "
                 f"{self.get_error_message(result.error_message.lstrip())}"
             )
 
