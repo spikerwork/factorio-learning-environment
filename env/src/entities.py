@@ -495,6 +495,9 @@ class Inserter(StaticEntity, Electric):
     _width: float = 1
     _height: float = 1
 
+class Filtered(BaseModel):
+    filter: Optional[Any] = None
+
 class UndergroundBelt(TransportBelt):
     """An underground section of transport belt."""
     is_input: bool
@@ -582,8 +585,10 @@ class OilRefinery(MultiFluidHandler, AssemblingMachine):
     """An oil refinery for processing crude oil into products.
     Requires powering and accepts input fluids (from pumpjacks, storage tanks etc) and solids
     First a recipe needs to be set and then the fluid sources can be connected to the refinery"""
+    """Represents a chemical plant that processes fluid recipes."""
     _height: float = 5
     _width: float = 5
+
 
 class PumpJack(MiningDrill, FluidHandler, Electric):
     """A pump jack for extracting crude oil."""
@@ -670,7 +675,8 @@ class RocketSilo(StaticEntity, Electric):
     rocket_inventory: Inventory = Inventory()  # Holds satellite or other payload
     rocket_progress: float = 0.0  # Progress of current rocket construction (0-100)
     launch_count: int = 0  # Number of successful launches
-
+    _width: float = 9
+    _height: float = 9
     def __repr__(self) -> str:
         return f"\n\tRocketSilo(position={self.position}, status={self.status}, " \
                f"rocket_parts={self.rocket_parts}, rocket_progress={self.rocket_progress:.1f}%, " \
@@ -716,7 +722,6 @@ class Reactor(StaticEntity):
     """A nuclear reactor"""
     _height: float = 5
     _width: float = 5
-    pass
 
 class EntityGroup(BaseModel):
     id: int

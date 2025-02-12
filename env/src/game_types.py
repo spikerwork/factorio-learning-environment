@@ -27,6 +27,10 @@ class RecipeName(enum.Enum):
     SolidFuelFromLightOil = "solid-fuel-from-light-oil" # Recipe for solid fuel from light oil
     SolidFuelFromPetroleumGas = "solid-fuel-from-petroleum-gas" # Recipe for solid fuel from petroleum gas
 
+    SolidFuelFromHeavyOil = "solid-fuel-from-heavy-oil"
+    SolidFuelFromLightOil = "solid-fuel-from-light-oil"
+    SolidFuelFromPetroleumGas = "solid-fuel-from-petroleum-gas"
+
     FillCrudeOilBarrel = "fill-crude-oil-barrel"
     FillHeavyOilBarrel = "fill-heavy-oil-barrel"
     FillLightOilBarrel = "fill-light-oil-barrel"
@@ -45,7 +49,6 @@ class RecipeName(enum.Enum):
 
 
 class PrototypeMetaclass(enum.EnumMeta):
-
     def __getattr__(cls, name):
         try:
             attr =  super().__getattr__(name)

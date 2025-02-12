@@ -161,7 +161,7 @@ class ConnectEntities(Tool):
 
         raise Exception(
             f"Failed to connect {set([type.name for type in connection_types])} from {source.name} at {source.position} to {target.name} at {target.position}. "
-            f"{self.get_error_message(str(last_exception))}. Check if the starting and end positions are valid and reachable."
+            f"{self.get_error_message(str(last_exception))}"
         )
 
     def _resolve_position_into_entity(self, position: Position):
