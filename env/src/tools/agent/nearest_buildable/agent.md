@@ -119,16 +119,17 @@ for i in range(3):
     # take steps of drill.WIDTH
     drill_pos = Position(x=left_top.x + Prototype.ElectricMiningDrill.WIDTH*i, y=left_top.y)
     # Place the drill facing down as we start from top coordinate
+    # The drop position will be below the drill as the direction is DOWN
     drill = place_entity(Prototype.ElectricMiningDrill, position=drill_pos, direction = Direction.DOWN)
     print(f"Placed ElectricMiningDrill {i} at {drill.position} to mine copper ore")
     # place a furnace to catch the ore
     # As a furnace has 2x2 dimensions, we need to use place_entity_next_to to ensure no overlap with drill
-    # We use the drill.direction as the direction, which will place it next to the drill covering the drop position 
-    furnace = place_entity_next_to(Prototype.StoneFurnace, reference_position=drill.position, direction = drill.direction)
+    # We use the Direction.DOWN as the direction, as the drill direction is DOWN which means the drop position is below the drill
+    furnace = place_entity_next_to(Prototype.StoneFurnace, reference_position=drill.position, direction = Direction.DOWN)
     print(f"Placed furnace at {furnace.position} to smelt the copper ore for drill {i} at {drill.position}")
     # add inserters for future potential integartion
-    # use drill direction to continue the same line
-    inserter = place_entity_next_to(Prototype.Inserter, reference_position=furnace.position, direction = drill.direction)
+    # put them below the furnace as the furnace is below the drill
+    inserter = place_entity_next_to(Prototype.Inserter, reference_position=furnace.position, direction = Direction.DOWN)
     print(f"Placed inserter at {inserter.position} to get the plates from furnace {i} at {furnace.position}")
 ```
 

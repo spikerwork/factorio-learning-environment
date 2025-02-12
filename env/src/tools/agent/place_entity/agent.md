@@ -73,9 +73,11 @@ You can put chests directly at the drop positions of drills to catch ore, thus c
 def setup_mining(resource_pos: Position):
     move_to(resource_pos)
     # Place drill
+    # put the drop position down
     drill = place_entity(
         Prototype.BurnerMiningDrill,
-        position=resource_pos
+        position=resource_pos,
+        direction=Direction.DOWN,
     )
     # log your actions
     print(f"Placed drill to mine iron ore at {drill.position}")
@@ -84,7 +86,8 @@ def setup_mining(resource_pos: Position):
     # Place output chest that catches ore
     chest = place_entity(
         Prototype.WoodenChest,
-        position=drill.drop_position
+        position=drill.drop_position,
+        direction=Direction.DOWN,
     )
     # log your actions
     print(f"Placed chest to catch iron ore at {chest.position}")

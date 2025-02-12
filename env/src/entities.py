@@ -506,7 +506,8 @@ class UndergroundBelt(TransportBelt):
     _width: float = 1
 
 class MiningDrill(StaticEntity):
-    """Base class for mining drills that extract resources."""
+    """Base class for mining drills that extract resources.
+    The direction of the drill is where the drop_position is oriented towards"""
     drop_position: Position
     resources: List[Ingredient]
 
@@ -591,7 +592,11 @@ class OilRefinery(MultiFluidHandler, AssemblingMachine):
 
 
 class PumpJack(MiningDrill, FluidHandler, Electric):
-    """A pump jack for extracting crude oil."""
+    """A pump jack for extracting crude oil. Requires electricity
+    This needs to be placed on crude oil and oil needs to be extracted with pipes
+    Oil can be sent to a storage tank, oil refinery or a chemical plant
+    Oil can also be sent to assmbling machine to be made into oil barrels
+    """
     _height: float = 3
     _width: float = 3
     pass
