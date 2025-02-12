@@ -570,6 +570,11 @@ class MultiFluidHandler(StaticEntity):
     fluid_box: Optional[Union[dict, list]] = []
     fluid_systems: Optional[Union[dict, list]] = []
 
+class FilterInserter(Inserter, Filtered):
+    """A inserter that only moves specific items"""
+    _height: float = 1
+    _width: float = 1
+
 class ChemicalPlant(MultiFluidHandler, AssemblingMachine):
     """Represents a chemical plant that processes fluid recipes.
     Requires powering and accepts input fluids (from storage tanks etc) and solids
@@ -665,11 +670,10 @@ class Chest(Entity):
     _height: float = 1
     _width: float = 1
 
-class StorageTank(Entity):
+class StorageTank(FluidHandler):
     """A tank for storing fluids.
     Can be used for inputs and outputs of chemical plants and refineries.
     Also can store water from offshore pumps."""
-    inventory: Inventory = Inventory()
     _height: float = 3
     _width: float = 3
 
