@@ -53,6 +53,7 @@ def build_shared_mining_line(ore_position, num_drills=5):
     for i in range(num_drills):
         drill_pos = Position(x=left_top.x + i*2, y=left_top.y)
         move_to(drill_pos)
+        # direction is down as the drop position needs to be down as its the upper drill
         drill = place_entity(Prototype.BurnerMiningDrill,
                                 direction=Direction.DOWN,
                                 position=drill_pos)
@@ -60,8 +61,10 @@ def build_shared_mining_line(ore_position, num_drills=5):
         print(f"Placed upper drill {i} at {drill.position}")
         
         # Place lower drill
+        # direction is UP as its the bottom drill and drop position needs to be facing up
+        # use spacing of 1 to leave room for belt
         bottom_drill = place_entity_next_to(Prototype.BurnerMiningDrill,
-                                               direction=Direction.DOWN,
+                                               direction=Direction.UP,
                                                reference_position=drill.position,
                                                spacing=1)
         bottom_drill = rotate_entity(bottom_drill, Direction.UP)
@@ -114,7 +117,7 @@ coords = nearest_buildable(Prototype.Boiler,building_box,offshore_pump.position)
 # place the boiler at the centre coordinate
 # first move to the center coordinate
 move_to(coords.center)
-boiler = place_entity(Prototype.Boiler, position = coords.center)
+boiler = place_entity(Prototype.Boiler, position = coords.center, direction = Direction.LEFT)
 print(f"Placed boiler to generate steam at {boiler.position}. This will be connected to the offshore pump at {offshore_pump.position}")
 # add coal to boiler to start the power generation
 boiler = insert_item(Prototype.Coal, boiler, 10)
@@ -130,7 +133,9 @@ coords = nearest_buildable(Prototype.SteamEngine,bbox,boiler.position)
 # move to the centre coordinate
 move_to(coords.center)
 # place the steam engine on the centre coordinate
-steam_engine = place_entity(Prototype.SteamEngine, position = coords.center)
+steam_engine = place_entity(Prototype.SteamEngine, 
+                            position = coords.center,
+                            direction = Direction.LEFT)
 
 print(f"Placed steam_engine to generate electricity at {steam_engine.position}. This will be connected to the boiler at {boiler.position} to generate electricity")
 
@@ -169,7 +174,7 @@ coords = nearest_buildable(Prototype.SolarPanel,building_box,solar_panel_positio
 move_to(coords.left_top)
 solar_panels = []
 for i in range(2):
-    solar_panel = place_entity(Prototype.SolarPanel, position = Position(x = coords.left_top.x + Prototype.SolarPanel.WIDTH * i, y = coords.left_top.y))
+    solar_panel = place_entity(Prototype.SolarPanel, position = Position(x = coords.left_top.x + Prototype.SolarPanel.WIDTH * i, y = coords.left_top.y), direction = Direction.DOWN)
     print(f"Placed solar_panel {i} to generate power at {solar_panel.position}")
     solar_panels.append(solar_panel)
 
@@ -191,7 +196,7 @@ solar_panel = get_entity(Prototype.SolarPanel, Position(x = 0, y = 0))
 # get a position 15 spaces away
 assembler_position = Position(x = furnace_output_inserter.x + 15, y = furnace_output_inserter.y)
 # Plan space for assembler and inserters, add some buffer
-building_box = BuildingBox(width=Prototype.AssemblingMachine1.WIDTH + 2*Prototype.BurnerInserter.WIDTH + 5, height=Prototype.AssemblingMachine1.HEIGHT+ 5)
+building_box = BuildingBox(width=Prototype.AssemblingMachine1.WIDTH + 2*Prototype.BurnerInserter.WIDTH + 2, height=Prototype.AssemblingMachine1.HEIGHT+ 2)
 buildable_coords = nearest_buildable(Prototype.AssemblingMachine1,
                                         building_box,
                                         assembler_position)
@@ -199,7 +204,8 @@ buildable_coords = nearest_buildable(Prototype.AssemblingMachine1,
 # Place assembling machine
 move_to(buildable_coords.center)
 assembler = place_entity(Prototype.AssemblingMachine1,
-                            position=buildable_coords.center)
+                            position=buildable_coords.center,
+                            direction = Direction.DOWN)
 print(f"Placed assembling machine at {assembler.position}")
 
 # Set recipe
@@ -253,7 +259,7 @@ print(f"Inventory of assembler: {inventory}")
 def build_research_facility( power_source):
     # Plan space for lab, chest and inserter
     # Add a buffer for connections etc
-    building_box = BuildingBox(width=Prototype.Lab.WIDTH + Prototype.BurnerInserter.WIDTH + Prototype.WoodenChest.WIDTH + 5, height=Prototype.Lab.HEIGHT+ 5)
+    building_box = BuildingBox(width=Prototype.Lab.WIDTH + Prototype.BurnerInserter.WIDTH + Prototype.WoodenChest.WIDTH + 2, height=Prototype.Lab.HEIGHT+ 2)
     buildable_coords = nearest_buildable(Prototype.Lab,
                                             building_box,
                                             power_source.position.right(20))
@@ -261,7 +267,8 @@ def build_research_facility( power_source):
     # Place lab
     move_to(buildable_coords.center)
     lab = place_entity(Prototype.Lab,
-                          position=buildable_coords.center)
+                          position=buildable_coords.center,
+                          direction = Direction.LEFT)
     print(f"Placed lab at {lab.position}")
     
     # Connect power
@@ -270,6 +277,7 @@ def build_research_facility( power_source):
                          Prototype.SmallElectricPole)
     print(f"Powered lab at {lab.position} with {poles}")
     # Add science pack inserter
+    # put it to the left of lab
     inserter = place_entity_next_to(Prototype.BurnerInserter,
                                         lab.position,
                                         direction=Direction.LEFT,
@@ -279,7 +287,7 @@ def build_research_facility( power_source):
     # Place input chest
     chest = place_entity(Prototype.WoodenChest,
                                      inserter.pickup_position,
-                                     direction=Direction.UP)
+                                     direction=Direction.LEFT)
     print(f"Placed chest at {chest.position} to input automation packs to lab at {lab.position}")
     
     return lab, inserter, chest
@@ -399,7 +407,7 @@ pumpjack = get_entity(Prototype.PumpJack, position=Position(x=-50, y=0))
 oil_refinery_pos = Position(x = pumpjack.position.x, y = pumpjack.position.y + 20)
 # get the buildingbox 
 # Add a buffer
-building_box = BuildingBox(width=Prototype.OilRefinery.WIDTH + 3, height=Prototype.OilRefinery.HEIGHT + 3)
+building_box = BuildingBox(width=Prototype.OilRefinery.WIDTH + 2, height=Prototype.OilRefinery.HEIGHT + 2)
 buildable_coords = nearest_buildable(Prototype.OilRefinery,
                                             building_box,
                                             oil_refinery_pos)
@@ -407,7 +415,8 @@ buildable_coords = nearest_buildable(Prototype.OilRefinery,
 # Place the refinery
 move_to(buildable_coords.center)
 oil_refinery = place_entity(Prototype.OilRefinery,
-                      position=buildable_coords.center)
+                      position=buildable_coords.center,
+                      direction = Direction.LEFT)
 print(f"Placed a oil refinery at {oil_refinery.position}")
 # Set the recipe to basc oil processing
 oil_refinery = set_entity_recipe(oil_refinery, RecipeName.BasicOilProcessing)
@@ -425,5 +434,5 @@ print(f"Connected the pumpjack at {pumpjack.position} to oil refinery at {oil_re
 - When a entity has status "WAITING_FOR_SPACE_IN_DESTINATION", it means the there is no space in the drop position. For instance, a mining drill will have status WAITING_FOR_SPACE_IN_DESTINATION when the entities it mines are not being properly collected by a furnace or a chest or transported away from drop position with transport belts
 - Make sure to always put enough fuel into all entities that require fuel. It's easy to mine more coal, so it's better to insert in abundance 
 - Keep it simple! Minimise the usage of transport belts if you don't need them. Use chests and furnaces to catch the ore directly from drills
-- Inserters put items into entities or take items away from entities. You need to add inserters when items need to be automatically put into entities like chests, assembling machines, furnaces, boilers etc. The only exception is you can put a furnace or a chest directly at drills drop position, that catches the ore directly
+- Inserters put items into entities or take items away from entities. You need to add inserters when items need to be automatically put into entities like chests, assembling machines, furnaces, boilers etc. The only exception is you can put a chest directly at drills drop position, that catches the ore directly or a furnace with place_entity_next_to(drill.drop_position), where the furnace will be fed the ore
 - have atleast 10-20 spaces between different mininig sections
