@@ -41,6 +41,7 @@ You must specify a connection type prototype:
 connection_type=Prototype.TransportBelt
 
 # Multiple compatible connection types 
+# If you have UndergroundBelts in inventory, use them to simplify above-ground structures
 connection_type={Prototype.TransportBelt, Prototype.UndergroundBelt}
 ```
 
@@ -71,8 +72,8 @@ Pipes connect fluid-handling entities:
 offshore_pump = get_entity(Prototype.OffshorePump, Position(x= 10, y = 0))
 boiler = get_entity(Prototype.Boiler, Position(x= 0, y = 0))
 
-# Connect water flow
-water_pipes = connect_entities(offshore_pump, boiler, Prototype.Pipe)
+# Connect water flow with over and underground pipes
+water_pipes = connect_entities(offshore_pump, boiler, {Prototype.TransportBelt, Prototype.UndergroundBelt})
 print(f"Connected offshore_pump at {offshore_pump.position} to boiler at {boiler.position} with {pipes}")
 ```
 

@@ -8,7 +8,7 @@ from tools.agent.connect_entities.resolver import Resolver
 class TransportConnectionResolver(Resolver):
 
     def __init__(self, *args):
-        super().__init__(args)
+        super().__init__(*args)
 
     def _get_transport_belt_adjacent_positions(self, belt, target=False) -> List[Position]:
         source_positions = [belt.output_position] if not target else [belt.input_position]
@@ -41,8 +41,10 @@ class TransportConnectionResolver(Resolver):
                 source_position = source.drop_position
                 # check for entities at the source position
                 entities = self.get_entities(position=source_position, radius=0)
+
                 if len(entities) > 0:
-                    raise Exception(f"Cannot connect to source inserter drop_position position {source_position} as it is already occupied by following entities {entities}.")
+                    entities = [f"{x.name} at {x.position}" for x in entities]
+                    raise Exception(f"Cannot connect to source inserter drop_position position {source_position} as it is already occupied by following entities - {entities}.")
                 source_positions = [source.drop_position]
 
             case MiningDrill():
@@ -71,7 +73,9 @@ class TransportConnectionResolver(Resolver):
                 target_position = target.pickup_position
                 # check for entities at the target position
                 entities = self.get_entities(position=target_position, radius=0)
+                entities = [x for x  in entities if x.name != "transport-belt"]
                 if len(entities) > 0:
+                    entities = [f"{x.name} at {x.position}" for x in entities]
                     raise Exception(f"Cannot connect to target inserter pickup_position position {target_position} as it is already occupied by following entities {entities}.")
                 target_positions = [target.pickup_position]
 

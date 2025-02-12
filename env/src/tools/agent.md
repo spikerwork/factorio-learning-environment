@@ -6,7 +6,7 @@
 
 #### Self-Fueling Coal Mining System
 ```python
-def build_coal_mining_system(coal_patch_position):
+def build_self_fueling_coal_mining_system(coal_patch_position):
     # Define building area
     building_box = BuildingBox(width=Prototype.BurnerMiningDrill.WIDTH, height=Prototype.BurnerMiningDrill.HEIGHT + Prototype.BurnerInserter.HEIGHT + Prototype.TransportBelt.HEIGHT)  #  drill width, drill + inserter + belt height
     buildable_coords = nearest_buildable(Prototype.BurnerMiningDrill, building_box, coal_patch_position)

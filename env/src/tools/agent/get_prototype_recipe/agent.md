@@ -1,6 +1,6 @@
 # get_prototype_recipe Tool Guide
 
-The `get_prototype_recipe` tool retrieves the complete recipe information for any craftable item or entity in Factorio. This tool is essential for understanding crafting requirements and planning production chains.
+The `get_prototype_recipe` tool retrieves the complete recipe information for any craftable item, fluid or entity in Factorio. This tool is essential for understanding crafting requirements and planning production chains.
 
 ## Core Functionality
 
@@ -68,10 +68,6 @@ Here are some common recipe examples:
 
 ### Basic Items
 ```python
-# Iron Gear Wheel
-recipe = get_prototype_recipe(Prototype.IronGearWheel)
-# Requires: 2 Iron Plates
-
 # Advanced Circuit
 recipe = get_prototype_recipe(Prototype.AdvancedCircuit)
 # Requires: Electronic Circuits, Copper Cable, Plastic
@@ -79,4 +75,8 @@ recipe = get_prototype_recipe(Prototype.AdvancedCircuit)
 # Processing Unit
 recipe = get_prototype_recipe(Prototype.ProcessingUnit)
 # Requires: Advanced Circuits, Electronic Circuits, Sulfuric Acid
+
+# Sulfuric acid
+recipe = get_prototype_recipe(RecipeName.SulfuricAcid)
+# Requires: Iron Plates, SUlfur, Water
 ```

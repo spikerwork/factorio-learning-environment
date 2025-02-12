@@ -488,7 +488,8 @@ class Accumulator(StaticEntity, Electric):
     _width: float = 2
 
 class Inserter(StaticEntity, Electric):
-    """Represents an inserter that moves items between entities."""
+    """Represents an inserter that moves items between entities.
+    Requires electricity to power"""
     pickup_position: Optional[Position] = None
     drop_position: Position
     _width: float = 1
@@ -554,7 +555,8 @@ class FluidHandler(StaticEntity):
     fluid_systems: Optional[Union[dict, list]] = []
 
 class AdvancedAssemblingMachine(FluidHandler, AssemblingMachine):
-    """A second and third tier assembling machine that can handle fluids."""
+    """A second and third tier assembling machine that can handle fluids.
+    A recipe first needs to be set and then the input fluid source can be connected with pipes"""
     _height: float = 3
     _width: float = 3
 
@@ -571,14 +573,21 @@ class FilterInserter(Inserter, Filtered):
     """A inserter that only moves specific items"""
 
 class ChemicalPlant(MultiFluidHandler, AssemblingMachine):
-    """Represents a chemical plant that processes fluid recipes."""
+    """Represents a chemical plant that processes fluid recipes.
+    Requires powering and accepts input fluids (from storage tanks etc) and solids
+    Outputs either:
+        solids (battery, plastic) that need to be extracted with inserters
+        fluids (sulfuric acid, oil) that need to be extracted with pipes
+    First a recipe needs to be set and then the fluid sources can be connected to the plant"""
     _height: float = 3
     _width: float = 3
     pass
 
 
 class OilRefinery(MultiFluidHandler, AssemblingMachine):
-    """An oil refinery for processing crude oil into products."""
+    """An oil refinery for processing crude oil into products.
+    Requires powering and accepts input fluids (from pumpjacks, storage tanks etc) and solids
+    First a recipe needs to be set and then the fluid sources can be connected to the refinery"""
     _height: float = 5
     _width: float = 5
 
