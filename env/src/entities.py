@@ -647,12 +647,12 @@ class Chest(Entity):
     _width: float = 1
 
 class StorageTank(Entity):
+    """A tank for storing fluids.
+    Can be used for inputs and outputs of chemical plants and refineries.
+    Also can store water from offshore pumps."""
     inventory: Inventory = Inventory()
     _height: float = 3
     _width: float = 3
-
-class StorageTank(FluidHandler):
-    """A tank for storing fluids."""
 
 class RocketSilo(StaticEntity, Electric):
     """A rocket silo that can build and launch rockets."""
@@ -705,6 +705,8 @@ class Pipe(Entity):
 
 class Reactor(StaticEntity):
     """A nuclear reactor"""
+    _height: float = 5
+    _width: float = 5
     pass
 
 class EntityGroup(BaseModel):

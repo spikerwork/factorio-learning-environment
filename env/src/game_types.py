@@ -16,16 +16,16 @@ class ResourceName(enum.Enum):
 class RecipeName(enum.Enum):
     NuclearFuelReprocessing = "nuclear-fuel-reprocessing"
     UraniumProcessing = "uranium-processing"
-    SulfuricAcid = "sulfuric-acid"
-    BasicOilProcessing = "basic-oil-processing"
-    AdvancedOilProcessing = "advanced-oil-processing"
-    CoalLiquefaction = "coal-liquefaction"
-    HeavyOilCracking = "heavy-oil-cracking"
-    LightOilCracking = "light-oil-cracking"
+    SulfuricAcid = "sulfuric-acid" # Recipe for crafting sulfuric acid
+    BasicOilProcessing = "basic-oil-processing" # Recipe for processing petroleum gas from crude oil
+    AdvancedOilProcessing = "advanced-oil-processing" # Recipe for processing petroleum gas, heavy oil and light oil from crude oil
+    CoalLiquefaction = "coal-liquefaction" # Recipe for converting coal into petroleum gas
+    HeavyOilCracking = "heavy-oil-cracking" # Recipe for cracking heavy oil into light oil
+    LightOilCracking = "light-oil-cracking" # Recipe for cracking light oil into petroleum gas
 
-    SolidFuelFromHeavyOil = "solid-fuel-from-heavy-oil"
-    SolidFuelFromLightOil = "solid-fuel-from-light-oil"
-    SolidFuelFromPetroleumGas = "solid-fuel-from-petroleum-gas"
+    SolidFuelFromHeavyOil = "solid-fuel-from-heavy-oil" # Recipe for solid fuel from heavy oil
+    SolidFuelFromLightOil = "solid-fuel-from-light-oil" # Recipe for solid fuel from light oil
+    SolidFuelFromPetroleumGas = "solid-fuel-from-petroleum-gas" # Recipe for solid fuel from petroleum gas
 
     FillCrudeOilBarrel = "fill-crude-oil-barrel"
     FillHeavyOilBarrel = "fill-heavy-oil-barrel"
