@@ -73,6 +73,13 @@ class LuaScriptManager:
         # Find all scripts for this action by checking prefixes
         tool_scripts = [key for key in self.tool_scripts.keys()
                           if key.startswith(f"agent/{name}") or key.startswith(f"admin/{name}")]
+        # if no scripts are found, try for windows
+        if len(tool_scripts) == 0:
+            tool_scripts = [key for key in self.tool_scripts.keys()
+                          if key.startswith(f"agent\\{name}") or key.startswith(f"admin\\{name}")]
+        
+        #if len(tool_scripts) == 0:
+        #    raise Exception(f"No scripts found for tool {name}")
 
         # Sort scripts so server.lua comes last
         tool_scripts.sort(key=lambda x: x.endswith("server.lua"))
