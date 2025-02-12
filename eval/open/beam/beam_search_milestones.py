@@ -235,7 +235,7 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
             for program in step.sampled_programs:
                 # reset the instance to the start state
                 instance.reset(step.start_state)
-                final_reward, state, result, entities, achievements, ticks = await group.evaluator._evaluate_single(
+                final_reward, state, result, entities, achievements, ticks, error = await group.evaluator._evaluate_single(
                     instance_id,
                     program,
                     instance

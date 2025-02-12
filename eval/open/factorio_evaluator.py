@@ -235,7 +235,7 @@ class FactorioEvaluator:
                 final_inventory_count=sum([v for k, v in final_inventory.__dict__.items() if v > 0])
             )
 
-            if "error" in result.lower() and self.logger:
+            if error and self.logger:
                 group_id = self.port_to_group[tcp_port]
                 group = self.logger.groups[group_id]
                 instance_metrics = group.instances[tcp_port]
