@@ -90,7 +90,7 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
                 
                 saved_step_ids = []
                 output_dicts = {}
-                for step_idx in range(task.maximum_steps):
+                for step_idx in range(task.trajectory_length):
                     if step_idx == 0:
                         group.plans = await self.generate_plans(task, 
                                                                 nr_of_beams=len(group.active_instances),
@@ -176,6 +176,11 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
         responses = await asyncio.gather(*step_outputs)
         step_output_objects = {}
         for idx, response in enumerate(responses):
+            if len(response) == 0:
+                step_output_objects[plan_id] = Step(candidate_language_outputs=[],
+                                                     start_state=start_states[plan_id],
+                                                     sampled_programs = [])
+                continue
             output = response[0]
             plan_id = output.meta["plan_id"]
             # We need to create a new step object
@@ -349,7 +354,6 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
         instance.reset(check_state)
 
         task_success, achievements = task.verify(score=plan.steps[-1].program.value, 
-                                                 step=len(plan.steps), 
                                                  instance=instance, 
                                                  step_statistics=plan.steps[-1].program.meta["post_production_flows"])
 
