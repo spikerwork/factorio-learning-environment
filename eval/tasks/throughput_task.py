@@ -5,6 +5,7 @@ from eval.tasks.task_abc import TaskABC
 from env.src.utils.achievements import eval_program_with_achievements
 from models.game_state import GameState
 import copy
+from agents.utils import TaskResponse
 
 LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 50, "wooden-chest": 10, "burner-inserter": 50,"inserter": 50, "transport-belt": 500,
                                 "stone-furnace": 10, "boiler": 2, "offshore-pump": 2, "steam-engine": 2,
@@ -25,7 +26,7 @@ class ThroughputTask(TaskABC):
         self.starting_game_state = None
         self.pre_holdout_wait_period = pre_holdout_wait_period
     
-    def verify(self, score: float, step: int, instance: FactorioInstance, step_statistics: Dict) -> bool:
+    def verify(self, score: float, instance: FactorioInstance, step_statistics: Dict) -> TaskResponse:
         max_achieved_throughput = 0
         max_achievements = None
         # wait the pre-holdout period
@@ -41,7 +42,8 @@ class ThroughputTask(TaskABC):
                 max_achievements = achievements
             else:
                 break
-        return max_achieved_throughput >= self.quota, max_achievements
+        return TaskResponse(success = max_achieved_throughput >= self.quota,
+                            meta = {"achievements": max_achievements})
             
     def _to_dict(self) -> Dict[str, Any]:
         return {
