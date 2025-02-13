@@ -3,21 +3,24 @@ import argparse
 import os
 import copy
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 import multiprocessing
 from dotenv import load_dotenv
 
-from llm_factory import LLMFactory
+from agents import Python
+from agents.agent_abc import AgentABC
+from agents.example_agent import ExampleAgent
 from eval.open.beam.run import SYSTEM_PROMPT, OBSERVATION_SPACE, MANUAL
 from eval.open.db_client import DBClient
 from eval.open.independent_runs.simple_evaluator import SimpleFactorioEvaluator
-from eval.open.mcts.formatters.recursive_report_formatter import RecursiveReportFormatter
-from eval.open.model.conversation import Conversation, Message, GenerationParameters
-from eval.open.model.game_state import GameState
-from eval.open.model.program import Program
+from models.conversation import Conversation
+from models.message import Message
+from models.game_state import GameState
+from models.program import Program
 from instance import FactorioInstance
 from cluster.local.cluster_ips import get_local_container_ips
-from eval.open.mcts.python_parser import PythonParser
+from agents.utils.python_parser import PythonParser
+from models.response import Response
 
 load_dotenv()
 
@@ -26,8 +29,9 @@ COURTESY_SLEEP = 5
 @dataclass
 class EvalConfig:
     """Configuration for evaluation"""
-    model: str
-    system_prompt: str
+    #model: str
+    #system_prompt: str
+    agent: AgentABC
     initial_state: GameState
     version: int
     version_description: str
@@ -39,47 +43,35 @@ class TrajectoryRunner:
     """Handles program generation and evaluation for a single trajectory"""
 
     def __init__(self,
-                 llm_factory: LLMFactory,
+                 #llm_factory: LLMFactory,
+                 agent: AgentABC,
                  db_client: DBClient,
                  evaluator: SimpleFactorioEvaluator,
                  config: EvalConfig,
                  process_id: int):
-        self.llm = llm_factory
+        self.agent = agent
         self.db = db_client
         self.evaluator = evaluator
         self.config = config
-        self.parser = PythonParser()
         self.iteration_times = []
         self.process_id = process_id
-        self.formatter = RecursiveReportFormatter(
-            chunk_size=16,
-            llm_factory=llm_factory,
-            cache_dir='summary_cache',
-        )
+
 
     def _is_model_compatible_with_n_samples(self, model):
         """Check if model supports batch sampling"""
         return "gpt" in model or 'o1' in model or 'gemini' in model
 
-    async def _create_program(self, response, conversation, messages, model, meta=None) -> Optional[Program]:
+    async def _create_program(self,
+                              code,
+                              conversation,
+                              messages,
+                              model,
+                              meta=None,
+                              total_tokens=0,
+                              output_tokens=0,
+                              input_tokens=0) -> Optional[Program]:
+
         """Create a Program instance from a single response"""
-        if hasattr(response, 'choices'):
-            choice = response.choices[0]
-            input_tokens = response.usage.prompt_tokens if hasattr(response, 'usage') else 0
-            output_tokens = response.usage.completion_tokens if hasattr(response, 'usage') else 0
-            total_tokens = input_tokens + output_tokens
-        else:
-            choice = response.content[0]
-            input_tokens = response.usage.input_tokens if hasattr(response, 'usage') else 0
-            output_tokens = response.usage.output_tokens if hasattr(response, 'usage') else 0
-            total_tokens = input_tokens + output_tokens
-
-        try:
-            code, text_response = self.parser.extract_code(choice)
-        except Exception as e:
-            print(f"Failed to extract code from choice: {str(e)}")
-            return None
-
         if not code:
             return None
 
@@ -93,7 +85,7 @@ class TrajectoryRunner:
             version=self.config.version,
             model=model,
             version_description=self.config.version_description,
-            meta={"text_response": text_response, "model": model, "process_id": self.process_id},
+            meta={"model": model, "process_id": self.process_id},
             depth=len(messages) - 2
         )
 
@@ -102,39 +94,24 @@ class TrajectoryRunner:
 
         return program
 
-    async def _generate_programs_batch(self, conversation: Conversation,
-                                       generation_params: GenerationParameters,
-                                       meta={}) -> List[Program]:
-        """Generate program using MCTS-style generation logic"""
+    async def _generate_program(self, conversation: Conversation,
+                                       last_response: Response,
+                                       meta={}) -> Program:
         conversation = copy.deepcopy(conversation)
-
-        formatted = await self.formatter.format_conversation(conversation)
-        formatted_messages = self.formatter.to_llm_messages(
-            formatted
-        )
-
         try:
-            messages = conversation.model_dump()['messages']
-        except Exception:
-            messages = conversation.dict()['messages']
+            code = await self.agent.step(conversation, last_response)
 
-
-        try:
-            response = await self.llm.acall(
-                messages=formatted_messages,
-                n_samples=1,  # We only need one program per iteration
-                temperature=generation_params.temperature,
-                max_tokens=generation_params.max_tokens,
-                model=generation_params.model,
-                presence_penalty=0.7
-            )
+            try:
+                messages = conversation.model_dump()['messages']
+            except Exception:
+                messages = conversation.dict()['messages']
 
             program = await self._create_program(
-                response, conversation, messages,
-                generation_params.model, meta
+                code, conversation, messages,
+                self.agent.model, meta
             )
 
-            return [program] if program else []
+            return program
 
         except Exception as e:
             print(f"Program generation failed: {str(e)}")
@@ -195,6 +172,7 @@ class TrajectoryRunner:
 
         if self.config.resume_version:
             current_state, current_conversation, parent_id, depth = await self.get_resume_state()
+            self.agent.conversation = current_conversation
             if not current_state:
                 return
         else:
@@ -210,31 +188,27 @@ class TrajectoryRunner:
                 Message(role="user", content=f"1: ('Inventory: {current_state.inventory.__dict__}')\n"
                                              f"2: ('Entities: {entities}')"),
             ])
+            self.agent.conversation = current_conversation
             parent_id = None
 
+        last_response = None
         # Run trajectory
         for iteration in range(depth, self.config.trajectory_length):
             iteration_start = time.time()
             time.sleep(COURTESY_SLEEP) # courtesy sleep
             try:
-                # Generate program
-                generation_params = GenerationParameters(
-                    n=1,
-                    model=self.llm.model,
-                    presence_penalty=0.7,
-                    max_tokens=2048
-                )
 
-                programs = await self._generate_programs_batch(current_conversation, generation_params)
+
+                program = await self._generate_program(self.agent.conversation, last_response)
                 print(f"Generated program {multiprocessing.current_process().name} - "
-                      f"Model: {self.config.model} - "
+                      f"Model: {self.config.agent.model} - "
                       f"Iteration {iteration}/{self.config.trajectory_length}")
 
-                if not programs:
+                if not program:
                     continue
 
-                program = programs[0]
                 program.parent_id = parent_id
+
 
                 # Evaluate program
                 instance = self.evaluator.instance
@@ -244,7 +218,7 @@ class TrajectoryRunner:
                 print(program.code + "\n"+"="*50)
                 print("\033[1m\n".join(['>>>\t'+line for line in program.response.strip().replace('\\n', '\n\t').split('\n')]).strip()+"\033[0m")
                 print(f"Evaluated program {multiprocessing.current_process().name} - "
-                      f"Model: {self.config.model} - "
+                      f"Model: {self.config.agent.model} - "
                       f"Iteration {iteration}/{self.config.trajectory_length}")
 
 
@@ -252,11 +226,23 @@ class TrajectoryRunner:
                     continue
 
                 program = evaluated_program
+                self.agent.conversation = program.conversation
+
+                last_response = Response(
+                    code=program.code,
+                    created_at=program.created_at,
+                    score=program.value,
+                    achievements=program.achievements,
+                    step=depth,
+                    ticks = program.ticks,
+                    flows = program.flows,
+                    response=program.response,
+                )
 
                 # Save program
                 saved_program = await self.db.create_program(program)
                 print(f"Saved program {multiprocessing.current_process().name} - "
-                      f"Model: {self.config.model} - "
+                      f"Model: {self.config.agent.model} - "
                       f"Iteration {iteration}/{self.config.trajectory_length}")
 
                 parent_id = saved_program.id
@@ -279,7 +265,7 @@ class TrajectoryRunner:
                     elapsed_str = f"{int(elapsed // 3600):02d}:{int((elapsed % 3600) // 60):02d}:{int(elapsed % 60):02d}"
                     eta = self.get_eta(iteration)
                     print(f"\033[92m Process {multiprocessing.current_process().name} - "
-                          f"Model: {self.config.model} - "
+                          f"Model: {self.config.agent.model} - "
                           f"Iteration {iteration}/{self.config.trajectory_length} - "
                           f"Value: {program.value:.2f} - "
                           f"Elapsed: {elapsed_str} - "
@@ -325,7 +311,7 @@ async def run_trajectory(process_id: int, config: EvalConfig):
     """Entry point for running a single trajectory"""
     # Initialize components
     db_client = await create_db_client()
-    llm_factory = LLMFactory(model=config.model)
+    #llm_factory = LLMFactory(model=config.model)
     instance = create_factorio_instance(process_id)
 
     evaluator = SimpleFactorioEvaluator(
@@ -335,7 +321,7 @@ async def run_trajectory(process_id: int, config: EvalConfig):
         error_penalty=0
     )
 
-    runner = TrajectoryRunner(llm_factory, db_client, evaluator, config, process_id)
+    runner = TrajectoryRunner(config.agent, db_client, evaluator, config, process_id)
     await runner.run()
 
     await db_client.cleanup()
@@ -363,7 +349,7 @@ def main():
     model_configs = [
         #{"model": "meta-llama/Llama-3.3-70B-Instruct-Turbo", "resume_version": 488},
         #{"model": "gpt-4o-mini", "resume_version": None},
-        {"model": "gpt-4o", "resume_version": None},
+        {"model": "gpt-4o", "resume_version": 532},
        # {"model": "gpt-4o-mini", "resume_version": 505},
         #{"model": "deepseek-chat", "resume_version": 507}
         #{"model": "deepseek-chat", "resume_version": None},#491},
@@ -390,14 +376,18 @@ def main():
     API_SCHEMA = instance.get_system_prompt()
     system_prompt = SYSTEM_PROMPT + '\n\n' + API_SCHEMA + '\n\n# Observations:\n' + OBSERVATION_SPACE + '\n\n' + MANUAL + '\n```'
 
+
+    agent = ExampleAgent("gpt-4o", system_prompt)
+
     # Get starting version number for new runs
     base_version = asyncio.run(get_next_version())
 
     processes = []
     for model_idx, model_config in enumerate(model_configs):
         config = EvalConfig(
-            model=model_config["model"],
-            system_prompt=system_prompt,
+            #model=model_config["model"],
+            #system_prompt=system_prompt,
+            agent=agent,
             initial_state=initial_state,
             version=model_config["resume_version"] if model_config["resume_version"] else base_version + model_idx,
             version_description=f"model:{model_config['model']}\ntype:simple_trajectory",

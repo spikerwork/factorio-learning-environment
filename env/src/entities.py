@@ -572,6 +572,8 @@ class MultiFluidHandler(StaticEntity):
 
 class FilterInserter(Inserter, Filtered):
     """A inserter that only moves specific items"""
+    _height: float = 1
+    _width: float = 1
 
 class ChemicalPlant(MultiFluidHandler, AssemblingMachine):
     """Represents a chemical plant that processes fluid recipes.
@@ -666,11 +668,10 @@ class Chest(Entity):
     _height: float = 1
     _width: float = 1
 
-class StorageTank(Entity):
+class StorageTank(FluidHandler):
     """A tank for storing fluids.
     Can be used for inputs and outputs of chemical plants and refineries.
     Also can store water from offshore pumps."""
-    inventory: Inventory = Inventory()
     _height: float = 3
     _width: float = 3
 
@@ -681,7 +682,8 @@ class RocketSilo(StaticEntity, Electric):
     rocket_inventory: Inventory = Inventory()  # Holds satellite or other payload
     rocket_progress: float = 0.0  # Progress of current rocket construction (0-100)
     launch_count: int = 0  # Number of successful launches
-
+    _width: float = 9
+    _height: float = 9
     def __repr__(self) -> str:
         return f"\n\tRocketSilo(position={self.position}, status={self.status}, " \
                f"rocket_parts={self.rocket_parts}, rocket_progress={self.rocket_progress:.1f}%, " \
@@ -727,7 +729,6 @@ class Reactor(StaticEntity):
     """A nuclear reactor"""
     _height: float = 5
     _width: float = 5
-    pass
 
 class EntityGroup(BaseModel):
     id: int

@@ -72,8 +72,11 @@ class LuaScriptManager:
     def load_tool_into_game(self, name):
         # Find all scripts for this action by checking prefixes
         tool_scripts = [key for key in self.tool_scripts.keys()
-                          if key.startswith(f"agent\{name}") or key.startswith(f"admin\{name}")]
-
+                          if key.startswith(f"agent/{name}") or key.startswith(f"admin/{name}")]
+        # windows addition
+        if len(tool_scripts) == 0:
+            tool_scripts = [key for key in self.tool_scripts.keys()
+                          if key.startswith(f"agent\\{name}") or key.startswith(f"admin\\{name}")]
         # Sort scripts so server.lua comes last
         tool_scripts.sort(key=lambda x: x.endswith("server.lua"))
 

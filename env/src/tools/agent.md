@@ -378,8 +378,8 @@ Set recipe for chemical plant and connect to input and output storage tanks
 chemical_plant = get_entity(Prototype.ChemicalPlant, position=Position(x=0, y=0))
 
 # Set the recipe to craft solid fuel from heavy oil
-chemical_plant = set_entity_recipe(chemical_plant, RecipeName.SolidFuelFromHeavyOil)
-print(f"Set the recipe of chemical plant at {chemical_plant.position} to SolidFuelFromHeavyOil")
+chemical_plant = set_entity_recipe(chemical_plant, RecipeName.HeavyOilCracking)
+print(f"Set the recipe of chemical plant at {chemical_plant.position} to HeavyOilCracking")
 
 # get the input storage tank
 storage_tank = get_entity(Prototype.StorageTank, position=Position(x=10, y=0))

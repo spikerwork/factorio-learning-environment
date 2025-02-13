@@ -1,15 +1,21 @@
 from agents import Response, Python, CompletionResult
-from eval.open.model.conversation import Conversation
+from models.conversation import Conversation
 
 
 class AgentABC:
-   def __init__(self, *args, **kwargs):
-       pass
+   model: str
+   conversation: Conversation
+
+   def __init__(self, model, *args, **kwargs):
+       self.model = model
+
    def set_conversation(self, conversation: Conversation) -> None:
+       self.conversation = conversation
+
+   async def step(self, conversation: Conversation, response: Response) -> Python:
        pass
-   def step(self, conversation: Conversation, response: Response) -> Python:
-       pass
-   def end(self, conversation: Conversation, completion: CompletionResult):
+
+   async def end(self, conversation: Conversation, completion: CompletionResult):
        pass
 
 
