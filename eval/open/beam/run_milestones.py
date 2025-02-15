@@ -187,7 +187,7 @@ SYSTEM_PROMPT = \
 
     For example: "I should move to position 0, 0 ```python move_to(Position(x=0, y=0))```"
     
-    IMPORTANT: Always create small and modular policies that are easy to debug. For instance, if you want to create a resource mine, policy 1) Put down drill line, policy 2) Put down furnace line with inserters, policy 3) Connect drill line with furnace line and check that the factory works
+    IMPORTANT: Always create small and modular policies (usually less than 30 lines of code) that are easy to debug. For instance, if you want to create a resource mine, policy 1) Put down drill line, policy 2) Put down furnace line with inserters, policy 3) Connect drill line with furnace line and check that the factory works
 
     Small and modular policies are easy to carry out, debug when they arent working and understand. They also allow you to make small changes to the factory without breaking the entire system.
 
@@ -253,13 +253,16 @@ async def main():
     master_tool_path = r"env\src\tools"
     MANUAL = construct_manual(master_tool_path)
     API_SCHEMA = instances[0].get_system_prompt()
-    prompt = SYSTEM_PROMPT + '\n\n' + API_SCHEMA + '\n\nObservations:\n' + OBSERVATION_SPACE + '\n\n' + MANUAL + '\n```'
-    zero_state = GameState.from_instance(instances[0])
+    useful_info_path = r"eval\open\useful_info_for_tasks.md"
+    with open(useful_info_path, "r") as f:
+        useful_info = f.read()
+    prompt = SYSTEM_PROMPT + '\n\n' + API_SCHEMA + '\n\nObservations:\n' + OBSERVATION_SPACE + '\n\n' + MANUAL + '\n\n' + useful_info + '\n\n'
+    
 
     model_to_evaluate = "claude-3-5-sonnet-20241022"
     #model_to_evaluate = "meta-llama/Llama-3.3-70B-Instruct-Turbo"
     #model_to_evaluate = "Qwen/Qwen2.5-72B-Instruct-Turbo"
-    model_to_evaluate = "gpt-4o"
+    #model_to_evaluate = "gpt-4o"
     #model_to_evaluate = 'gpt-4o-mini-2024-07-18'
     #model_to_evaluate = "o1-mini-2024-09-12"
     #model_to_evaluate = 'deepseek-chat'
@@ -269,7 +272,7 @@ async def main():
 
     task_folder = r"eval\tasks\task_definitions"
     result_path = r"eval\tasks\supervised_results"
-    tasks = ["copper_plate_throughput_16"]
+    tasks = ["sulfur_throughput_16"]
     search_type = "beam_supervised"
     search_iterations = 1
 
@@ -289,10 +292,6 @@ async def main():
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
     
-    save_path = os.path.join(result_path, search_type, model_to_evaluate, dt_string)
-    # check if the path exists
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
 
     executor = initiate_executor(configs[search_type], instances, version, db_client, version_description, llm_factory, formatter)
     
@@ -302,11 +301,18 @@ async def main():
             input_task = json.load(f)
         task = initiate_task_configs(input_task)
         task = initialise_starting_state(instances[0], task)
+        run_id = f"{task_key}_{dt_string}"
+        save_path = os.path.join(result_path, search_type, model_to_evaluate, run_id)
+        # check if the path exists
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+
         config_dict = {"iterations": search_iterations,
                    "executor_kwargs": executor.config._to_dict(),
                    "task_config": task._to_dict()}
         # save the config dict
-        with open(os.path.join(save_path, f"{task_key}_config.json"), "w") as f:
+        with open(os.path.join(save_path, f"config.json"), "w") as f:
             json.dump(config_dict, f)
         print(f"Starting MCTS search for task {task.task}")
         results = await executor.search_supervised(
