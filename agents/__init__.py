@@ -1,6 +1,8 @@
 import ast
 import enum
 from typing import Dict, Any
+from pydantic import BaseModel
+from models.achievements import ProductionFlows
 
 
 class Python(str):
@@ -11,7 +13,7 @@ class Python(str):
         yield cls.validate
 
     @classmethod
-    def validate(cls, v: str) -> str:
+    def validate(cls, v: str, *args) -> str:
         if not isinstance(v, str):
             raise TypeError('string required')
 
@@ -24,6 +26,28 @@ class Python(str):
             raise ValueError(f'Error parsing Python code: {str(e)}')
 
         return v
+
+
+class PolicyMeta(BaseModel):
+    output_tokens: int
+    input_tokens: int
+    total_tokens: int
+
+class Policy(BaseModel):
+    code: Python
+    meta: PolicyMeta
+
+class TaskResponse:
+    meta: Dict[str, Any] = {}
+
+class Response:
+    score: float
+    achievements: Dict[Any, Any]
+    flows: ProductionFlows
+    task: TaskResponse
+    step: int
+    ticks: int
+
 
 class CompletionReason(enum.Enum):
     TIMEOUT = "timeout",

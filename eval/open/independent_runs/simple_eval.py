@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from agents import Python
 from agents.agent_abc import AgentABC
-from agents.example_agent import ExampleAgent
+from agents.basic_agent import BasicAgent
 from eval.open.beam.run import SYSTEM_PROMPT, OBSERVATION_SPACE, MANUAL
 from eval.open.db_client import DBClient
 from eval.open.independent_runs.simple_evaluator import SimpleFactorioEvaluator
@@ -63,55 +63,36 @@ class TrajectoryRunner:
         """Check if model supports batch sampling"""
         return "gpt" in model or 'o1' in model or 'gemini' in model
 
-    async def _create_program(self,
-                              code,
-                              conversation,
-                              messages,
-                              model,
-                              meta=None,
-                              total_tokens=0,
-                              output_tokens=0,
-                              input_tokens=0) -> Optional[Program]:
 
-        """Create a Program instance from a single response"""
-        if not code:
-            return None
-
-        program = Program(
-            code=code,
-            conversation=conversation,
-            response=code,
-            token_usage=total_tokens,
-            completion_token_usage=output_tokens,
-            prompt_token_usage=input_tokens,
-            version=self.config.version,
-            model=model,
-            version_description=self.config.version_description,
-            meta={"model": model, "process_id": self.process_id},
-            depth=len(messages) - 2
-        )
-
-        if meta:
-            program.meta.update(meta)
-
-        return program
-
-    async def _generate_program(self, conversation: Conversation,
-                                       last_response: Response,
-                                       meta={}) -> Program:
+    async def _generate_program(self, conversation: Conversation, response: Response, meta={}) -> Program:
         conversation = copy.deepcopy(conversation)
         try:
-            code = await self.agent.step(conversation, last_response)
+            policy = await self.agent.step(conversation, response)
+
+            if not policy:
+                raise Exception("Policy not valid Python. Skipping.")
 
             try:
                 messages = conversation.model_dump()['messages']
             except Exception:
                 messages = conversation.dict()['messages']
 
-            program = await self._create_program(
-                code, conversation, messages,
-                self.agent.model, meta
+            program = Program(
+                code=policy.code,
+                conversation=conversation,
+                response=response.response if response else None,
+                token_usage=policy.meta.total_tokens,
+                completion_token_usage=policy.meta.output_tokens,
+                prompt_token_usage=policy.meta.input_tokens,
+                version=self.config.version,
+                model=self.agent.model,
+                version_description=self.config.version_description,
+                meta={"model": self.agent.model, "process_id": self.process_id},
+                depth=len(messages) - 2
             )
+
+            if meta:
+                program.meta.update(meta)
 
             return program
 
@@ -184,7 +165,7 @@ class TrajectoryRunner:
             instance.reset(current_state)
             entities = instance.namespace.get_entities()
             current_conversation = Conversation(messages=[
-                Message(role="system", content=self.config.system_prompt),
+                Message(role="system", content=self.config.agent.system_prompt),
                 Message(role="assistant", content="print(f'Inventory: {inspect_inventory()}')\n"
                                                   "print(f'Entities: {get_entities()}')\n"),
                 Message(role="user", content=f"1: ('Inventory: {current_state.inventory.__dict__}')\n"
@@ -199,9 +180,8 @@ class TrajectoryRunner:
             iteration_start = time.time()
             time.sleep(COURTESY_SLEEP) # courtesy sleep
             try:
-
-
                 program = await self._generate_program(self.agent.conversation, last_response)
+
                 print(f"Generated program {multiprocessing.current_process().name} - "
                       f"Model: {self.config.agent.model} - "
                       f"Iteration {iteration}/{self.config.task.trajectory_length}")
@@ -210,7 +190,6 @@ class TrajectoryRunner:
                     continue
 
                 program.parent_id = parent_id
-
 
                 # Evaluate program
                 instance = self.evaluator.instance
@@ -222,7 +201,6 @@ class TrajectoryRunner:
                 print(f"Evaluated program {multiprocessing.current_process().name} - "
                       f"Model: {self.config.agent.model} - "
                       f"Iteration {iteration}/{self.config.task.trajectory_length}")
-
 
                 if not evaluated_program:
                     continue
@@ -349,39 +327,48 @@ def main():
     args = parser.parse_args()
     task_folder = r"eval\tasks\task_definitions"
 
-    # Model configurations
-    model_configs = [
-        #{"model": "meta-llama/Llama-3.3-70B-Instruct-Turbo", "resume_version": 488},
-        #{"model": "gpt-4o-mini", "resume_version": None},
-        {"model": "gpt-4o", "resume_version": 532},
-       # {"model": "gpt-4o-mini", "resume_version": 505},
-        #{"model": "deepseek-chat", "resume_version": 507}
-        #{"model": "deepseek-chat", "resume_version": None},#491},
-        #{"model": "claude-3-5-sonnet-20241022", "resume_version": None}#517}#516}
-        #{"model": "gpt-4o", "resume_version": 524}
-        #{"model": "claude-3-5-sonnet-20241022", "resume_version": 527}
-        #{"model": 'o3-mini', "resume_version": 510}#509 }#508}
-    ]
-    # model_configs = [
-    #     {"model": "gpt-4o-mini", "resume_version": 487}
-    # ]
+    # Create initial state and get system prompt
+    instance = create_factorio_instance(0)
+    # Create initial state and get system prompt
+    instance = create_factorio_instance(0)
+    initial_state = GameState.from_instance(instance)
+    system_prompt = instance.get_system_prompt()
+    #system_prompt = SYSTEM_PROMPT + '\n\n' + API_SCHEMA + '\n\n# Observations:\n' + OBSERVATION_SPACE
 
     run_configs = [
-        {"model": "gpt-4o", "resume_version": 532, "task": "iron_gear_wheel_throughput_16"},
+        {"agent": BasicAgent(model="gpt-4o", system_prompt=system_prompt), "resume_version": 551, "task": "iron_gear_wheel_throughput_16"},
+        {"agent": BasicAgent(model="gpt-4o", system_prompt=system_prompt), "resume_version": 552, "task": "iron_gear_wheel_throughput_16"},
+        {"agent": BasicAgent(model="gpt-4o", system_prompt=system_prompt), "resume_version": 553, "task": "iron_gear_wheel_throughput_16"},
+        {"agent": BasicAgent(model="gpt-4o", system_prompt=system_prompt), "resume_version": 554, "task": "iron_gear_wheel_throughput_16"},
+        {"agent": BasicAgent(model="deepseek-chat", system_prompt=system_prompt), "resume_version": 555, "task": "iron_gear_wheel_throughput_16"},
+        {"agent": BasicAgent(model="deepseek-chat", system_prompt=system_prompt), "resume_version": 556, "task": "iron_gear_wheel_throughput_16"},
+        {"agent": BasicAgent(model="deepseek-chat", system_prompt=system_prompt), "resume_version": 557, "task": "iron_gear_wheel_throughput_16"},
+        {"agent": BasicAgent(model="deepseek-chat", system_prompt=system_prompt), "resume_version": 558, "task": "iron_gear_wheel_throughput_16"},
+
+        # {"agent": BasicAgent(model="gpt-4o-mini", system_prompt=system_prompt), "resume_version": None },
+        # {"agent": BasicAgent(model="gpt-4o-mini", system_prompt=system_prompt), "resume_version": None},
+        # {"agent": BasicAgent(model="gpt-4o-mini", system_prompt=system_prompt), "resume_version": None},
+        # {"agent": BasicAgent(model="gpt-4o-mini", system_prompt=system_prompt), "resume_version": None},
+
+        {"agent": BasicAgent(model="anthropic/claude-3.5-sonnet-open-router", system_prompt=system_prompt), "resume_version": 559},
+        {"agent": BasicAgent(model="anthropic/claude-3.5-sonnet-open-router", system_prompt=system_prompt), "resume_version": 560},
+        {"agent": BasicAgent(model="anthropic/claude-3.5-sonnet-open-router", system_prompt=system_prompt), "resume_version": 561},
+        {"agent": BasicAgent(model="anthropic/claude-3.5-sonnet-open-router", system_prompt=system_prompt), "resume_version": 562},
+
+        # {"agent": BasicAgent(model="claude-3-5-sonnet-20241022-open-router", system_prompt=system_prompt), "resume_version": 559},
+        # {"agent": BasicAgent(model="claude-3-5-sonnet-20241022-open-router", system_prompt=system_prompt), "resume_version": 560},
+        # {"agent": BasicAgent(model="claude-3-5-sonnet-20241022-open-router", system_prompt=system_prompt), "resume_version": 561},
+        # {"agent": BasicAgent(model="claude-3-5-sonnet-20241022-open-router", system_prompt=system_prompt), "resume_version": 562},
+
     ]
 
     # Update resume versions if provided
     if args.resume_versions:
         versions = [int(v.strip()) if v.strip() else None for v in args.resume_versions.split(',')]
-        for i, version in enumerate(versions[:len(model_configs)]):
+        for i, version in enumerate(versions[:len(run_configs)]):
             if version is not None:
-                model_configs[i]["resume_version"] = version
+                run_configs[i]["resume_version"] = version
 
-    # Create initial state and get system prompt
-    instance = create_factorio_instance(0)
-
-    API_SCHEMA = instance.get_system_prompt()
-    system_prompt = SYSTEM_PROMPT + '\n\n' + API_SCHEMA + '\n\n# Observations:\n' + OBSERVATION_SPACE + '\n\n' + MANUAL + '\n```'
 
     # Get starting version number for new runs
     base_version = asyncio.run(get_next_version())
@@ -396,12 +383,11 @@ def main():
             input_task = json.load(f)
         task = initiate_task_configs(input_task)
         task = initialise_starting_state(instance, task)
-        agent = ExampleAgent(run_config["model"], system_prompt)
         config = EvalConfig(
             #model=model_config["model"],
             #system_prompt=system_prompt,
-            agent=agent,
-            version=run_config["resume_version"] if run_config["resume_version"] else base_version + model_idx,
+            agent=run_config["agent"],
+            version=run_config["resume_version"] if run_config["resume_version"] else base_version + run_idx,
             version_description=f"model:{run_config['model']}\ntype:simple_trajectory",
             resume_version=run_config["resume_version"],
             task=task
