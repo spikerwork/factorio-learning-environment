@@ -30,6 +30,3 @@ class TestAchievements(unittest.TestCase):
         _, _, _, achievements = eval_program_with_achievements(instance, test_string)
         ground_truth_achievement = {'static': {'stone-furnace': 1, 'coal': 10, 'stone': 10, 'copper-ore': 10}, 'dynamic': {'copper-plate': 5}}
         assert achievements == ground_truth_achievement
-
-if __name__ == '__main__':
-    unittest.main()

@@ -38,4 +38,4 @@ def test_game_state_reserach():
     # this tests for validation errors in the original zero states
     new_object = DummyObject(game_state=zero_state)
 
-test_game_state_reserach()
+#test_game_state_reserach()

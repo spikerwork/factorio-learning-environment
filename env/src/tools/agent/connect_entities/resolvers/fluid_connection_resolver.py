@@ -1,7 +1,7 @@
 from typing import Union, Tuple, cast, List, Optional
 
 from entities import FluidHandler, Position, Entity, Generator, Boiler, OffshorePump, Pipe, OilRefinery, \
-    ChemicalPlant, IndexedPosition, MultiFluidHandler, PipeGroup
+    ChemicalPlant, IndexedPosition, MultiFluidHandler, PipeGroup, PumpJack
 from game_types import Prototype
 from tools.agent.connect_entities.resolver import Resolver
 
@@ -25,9 +25,17 @@ class FluidConnectionResolver(Resolver):
         return bool(entities)
 
     def _get_source_fluid(self, entity: FluidHandler) -> str:
+        # update the source entity
+        updated_source_entity = self.get_entities(position = entity.position, radius=0)
+        if len(updated_source_entity) == 1:
+            entity = updated_source_entity[0]
         if entity.fluid_box:
             fluid_box = entity.fluid_box[0]
             return fluid_box['name']
+        if isinstance(entity, PumpJack):
+            return "crude-oil"
+        if isinstance(entity, OffshorePump):
+            return "water"
         return None
 
     def resolve(self, source: Union[Position, Entity], target: Union[Position, Entity]) -> List[Tuple[Position, Position]]:
@@ -43,9 +51,11 @@ class FluidConnectionResolver(Resolver):
             case (OffshorePump(), _):
                 source_positions = source.connection_points
 
-            case (Boiler(), Generator()):
+            case (Boiler(), Generator() | OilRefinery()):
                 source_positions = [source.steam_output_point]
-
+                source_fluid = "steam"
+            case (Boiler(), ChemicalPlant()):
+                raise Exception(f"Cannot connect a {source.prototype} to a {target.prototype}. This connection is not allowed")
             case (Boiler(), Boiler() | OffshorePump()):
                 sorted_positions = self._get_all_connection_points(
                     cast(FluidHandler, source),
@@ -112,13 +122,23 @@ class FluidConnectionResolver(Resolver):
                     target_positions = [target.steam_output_point]
 
             case OilRefinery() | ChemicalPlant():
+                #if isinstance(source, Boiler):
+                #    raise Exception(f"Cannot connect a {source.prototype} to a {target.prototype}. This connection is not allowed")
+                if not source_fluid:
+                    raise Exception(f"The source does not have fluid in it. Cannot connect an empty source to a {target.prototype}. The {target.prototype} input handlers are fluid specific so source entity needs to have fluid in it")
                 sorted_positions = self._get_all_connection_points(
                     cast(FluidHandler, target),
                     source_positions[0],
                     target.input_connection_points,
                     source_fluid
                 )
+                
                 if not sorted_positions:
+                    if target.recipe :
+                        if isinstance(source, Entity):
+                            raise Exception(f"Cannot connect to a {target.prototype} at {target.position} from {source.prototype} at {source.position} - No unblocked valid connection points found")
+                        else:
+                            raise Exception(f"Cannot connect to a {target.prototype} at {target.position} from {source} - No unblocked valid connection points found")
                     raise Exception(f"Cannot connect to a {target.prototype} until a recipe has been set.")
                 target_positions = sorted_positions if sorted_positions else [target.position]
 
@@ -165,7 +185,13 @@ class FluidConnectionResolver(Resolver):
                                    connection_points,
                                    source_fluid: Optional[str] = None) -> List[Position]:
         """Get all possible connection points sorted by distance."""
-
+        if len(connection_points) == 0:
+            return []
+        
+        if (isinstance(fluid_handler, OilRefinery) or isinstance(fluid_handler, ChemicalPlant)):
+            connection_types = [point.type for point in connection_points]
+            if source_fluid and source_fluid not in connection_types:
+                raise Exception(f"Source fluid {source_fluid} not needed and expected by the recipe at {fluid_handler.name} at {fluid_handler.position}")
         if source_fluid and isinstance(connection_points[0], IndexedPosition):
             connection_points = list(filter(lambda x: x.type == source_fluid, connection_points))
 

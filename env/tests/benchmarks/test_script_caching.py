@@ -85,4 +85,5 @@ def test_script_caching():
     assert mean_cached < mean_uncached, "Caching did not improve performance as expected."
 
 if __name__ == "__main__":
-    test_script_caching()
+    pass
+    #test_script_caching()

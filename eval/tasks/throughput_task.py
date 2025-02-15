@@ -9,17 +9,18 @@ from agents.utils import TaskResponse
 
 LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 50, "wooden-chest": 10, "burner-inserter": 50,"inserter": 50, "transport-belt": 500,
                                 "stone-furnace": 10, "boiler": 2, "offshore-pump": 2, "steam-engine": 2,
-                                "electric-mining-drill": 50, "small-electric-pole": 500, "pipe": 100,
+                                "electric-mining-drill": 50, "small-electric-pole": 500, "pipe": 500,
                                 "assembling-machine-2": 10, "electric-furnace": 10, "pipe-to-ground": 100, "underground-belt": 100,
+                                "pumpjack": 10, "oil-refinery": 5, "chemical-plant": 5, "storage-tank": 10,
                                 #"solar-panel": 50,
                                 }
 
 
 
 class ThroughputTask(TaskABC):
-    def __init__(self, maximum_steps, starting_inventory: Union[Inventory, Dict], task: str,
+    def __init__(self, trajectory_length, starting_inventory: Union[Inventory, Dict], task: str,
                   throughput_entity: Entity, quota: int, holdout_wait_period: int, pre_holdout_wait_period: int = 0):
-        super().__init__(maximum_steps, starting_inventory, task=task)
+        super().__init__(trajectory_length, starting_inventory, task=task)
         self.throughput_entity = throughput_entity
         self.quota = quota
         self.holdout_wait_period = holdout_wait_period
@@ -50,7 +51,7 @@ class ThroughputTask(TaskABC):
             "task": self.task,
             "throughput_entity": self.throughput_entity,
             "quota": self.quota,
-            "maximum_steps": self.maximum_steps,
+            "trajectory_length": self.trajectory_length,
             "starting_inventory": self.starting_inventory,
             "initial_state": self.starting_game_state.to_raw() if self.starting_game_state else None,
         }

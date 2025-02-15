@@ -1,7 +1,3 @@
-import sys
-sys.path.append(r"C:\Users\martb\Documents\paperpclip_max\PaperclipMaximiser")
-sys.path.append(r"C:\Users\martb\Documents\paperpclip_max\PaperclipMaximiser\env\src")
-
 import pytest
 
 from entities import Position, Direction, Entity
@@ -233,11 +229,3 @@ def recipe_setup(game, recipes_to_test, prototype, direction=Direction.DOWN):
             chest = game.get_entity(Prototype.WoodenChest, solid_chests[0][0].position)
             chest_inventory = game.inspect_inventory(chest)
             assert chest_inventory[solid_chests[0][1]] > 0, "Solid output not detected"
-
-if __name__ == "__main__":
-    instance = FactorioInstance(address='localhost',
-                                bounding_box=200,
-                                tcp_port=27015,
-                                fast=True)
-    namespace = game(instance)
-    namespace.instance = instance

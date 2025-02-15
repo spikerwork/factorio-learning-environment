@@ -4,7 +4,7 @@ from typing import Union, Optional, List, Dict, cast, Set
 import numpy
 
 from entities import EntityGroup, Entity, Position, BeltGroup, PipeGroup, ElectricityGroup, TransportBelt, \
-    Pipe, FluidHandler, MiningDrill, Inserter
+    Pipe, FluidHandler, MiningDrill, Inserter, ChemicalPlant, OilRefinery
 from instance import PLAYER, Direction
 from game_types import Prototype, prototype_by_name
 from tools.admin.clear_collision_boxes.client import ClearCollisionBoxes
@@ -162,9 +162,13 @@ class ConnectEntities(Tool):
 
         source_error_message_addition = f"{source}" if isinstance(source, Position) else f"{source.name} at {source.position}"
         target_error_message_addition = f"{target}" if isinstance(target, Position) else f"{target.name} at {target.position}"
+        exception_message = str(last_exception)
+        if exception_message == "nil,":
+            exception_message = "Failed to connect entitites. Please reposition entities or clear potential blockages"
+
         raise Exception(
             f"Failed to connect {set([type.name for type in connection_types])} from {source_error_message_addition} to {target_error_message_addition}. "
-            f"{self.get_error_message(str(last_exception))}"
+            f"{self.get_error_message(exception_message)}"
         )
 
     def _resolve_position_into_entity(self, position: Position):
@@ -337,7 +341,19 @@ class ConnectEntities(Tool):
                 finally:
                     self._clear_collision_boxes()
 
-        if not result.is_success:
+        if not result.is_success and (isinstance(target_entity, ChemicalPlant) or isinstance(target_entity, OilRefinery)): 
+            #self._extend_collision_boxes(source_pos, target_pos)
+            try:
+                adjusted_result = self.try_something_really_stupid_with_target_2(source_pos, target_pos,
+                            connection_type_names_values, num_available,
+                            pathing_radius, dry_run, target_entity, source_entity, names_to_type, metaclasses)
+                result = adjusted_result if adjusted_result else result
+            finally:
+                pass
+                #self._clear_collision_boxes()
+            
+        if result is None or not result.is_success:
+            
             raise Exception(
                # f"Failed to connect {connection_prototype} from {source_pos} to {target_pos}. "
                 f"{self.get_error_message(result.error_message.lstrip())}"
@@ -643,3 +659,79 @@ class ConnectEntities(Tool):
             if entity and isinstance(entity, BeltGroup):
                 return entity.outputs[0].output_position
         return pos
+
+    def try_something_really_stupid_with_target_2(self, source_pos, target_pos,
+                        connection_type_names_values, num_available,
+                        pathing_radius, dry_run, target_entity, source_entity, names_to_type, metaclasses):
+        # if we dont have "pipe" or "pipe-to-ground" in connections, we cant start the process
+        if "pipe" not in connection_type_names_values or "pipe-to-ground" not in connection_type_names_values:
+            return None
+        margin = 3
+        # underground pipes can do at most 10 distance
+        max_distance = 10 - margin
+        pathing_radius = 0.5
+        # get the offsets from the directions
+        target_entity_direction = target_entity.direction
+        if target_entity_direction.name == "UP":
+            offset = {"x": 0, "y": 1}
+        elif target_entity_direction.name == "DOWN":
+            offset = {"x": 0, "y": -1}
+        elif target_entity_direction.name == "LEFT":
+            offset = {"x": 1, "y": 0}
+        elif target_entity_direction.name == "RIGHT":
+            offset = {"x": -1, "y": 0}
+        else:
+            return None
+        # do +1 bc python is exclusive for the end of loop
+        for i in range(1, max_distance + 1):
+            new_target_pos = Position(target_pos.x + offset["x"] * (i + margin) , target_pos.y + offset["y"] * (i + margin))
+            # continue if new target pos is blocked or surrounded by things
+            if self._is_blocked(new_target_pos, 3):
+                continue
+
+            # try to find a path from the source to the new target pos
+            # Solely use underground pipes
+            try:
+                self._extend_collision_boxes(new_target_pos, target_pos)
+                entity_input_to_unblocked_straight_line_start = self._attempt_path_finding(
+                                new_target_pos, target_pos,
+                                ["pipe-to-ground"], num_available,
+                                0.5, dry_run, True
+                            )
+            finally:
+                self._clear_collision_boxes()
+            if entity_input_to_unblocked_straight_line_start.is_success:
+
+                # do one more offset so we connect to the immedaite position before it
+                new_target_pos = Position(new_target_pos.x + offset["x"], new_target_pos.y + offset["y"])
+                try:
+                    self._extend_collision_boxes(source_pos, new_target_pos)
+                    source_to_underground_start = self._attempt_path_finding(
+                                source_pos, new_target_pos,
+                                connection_type_names_values, num_available,
+                                pathing_radius, dry_run, False
+                            )
+                finally:
+                    self._clear_collision_boxes()
+                # if success, we combinethe 2 paths and return
+                # Else we pickup the straight line pipes and try again with a longer distance
+                if source_to_underground_start.is_success:
+                    # add the underground pipes to the source_to_underground_start result
+                    for value in entity_input_to_unblocked_straight_line_start.entities.values():
+                        source_to_underground_start.entities[len(source_to_underground_start.entities)+1] = value
+                    return source_to_underground_start
+                else:
+                    for entity_data in entity_input_to_unblocked_straight_line_start.entities.values():
+                        if not isinstance(entity_data, dict):
+                            continue
+                        # clean up the first path
+                        self._process_warnings(entity_data)
+                        entity = metaclasses[entity_data['name']](prototype=names_to_type[entity_data['name']], **entity_data)
+                        self.pickup_entity(entity)
+
+        return None
+    
+
+    def _is_blocked(self, pos: Position, radius = 0.5) -> bool:
+        entities = self.get_entities(position=pos, radius=radius)
+        return bool(entities)
