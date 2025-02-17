@@ -7,6 +7,8 @@ sys.path.append(r"C:\Users\martb\Documents\paperpclip_max\PaperclipMaximiser\env
 from env.src.instance import FactorioInstance
 from env.src.utils.achievements import eval_program_with_achievements
 from env.src.models.game_state import GameState
+import os
+import json
 def test_achievements():
         instance = FactorioInstance(address='localhost',
                                 bounding_box=200,
@@ -2026,9 +2028,106 @@ def test_error_pattern_60(): # DEMO
         #print(result)
 
 
+def test_error_pattern_61(): # DEMO
+        from env.src.game_types import Prototype, Resource, Direction, Position, BuildingBox   
+        
+        LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 50, "wooden-chest": 10, "burner-inserter": 50,"inserter": 50, "transport-belt": 500,
+                                "stone-furnace": 10, "boiler": 2, "offshore-pump": 2, "steam-engine": 2,
+                                "electric-mining-drill": 50, "small-electric-pole": 500, "pipe": 500,
+                                "assembling-machine-2": 10, "electric-furnace": 10, "pipe-to-ground": 100, "underground-belt": 100,
+                                "pumpjack": 10, "oil-refinery": 5, "chemical-plant": 5, "storage-tank": 10,
+                                #"solar-panel": 50,
+                                }
+        
+        instance = FactorioInstance(address='localhost',
+                                bounding_box=200,
+                                tcp_port=27015,
+                                fast=True,
+                                #cache_scripts=False,
+                                inventory=LAB_PLAY_POPULATED_STARTING_INVENTORY) 
+        
+        test_string_1 = '# First find water for power generation\nwater_pos = nearest(Resource.Water)\nprint(f"Found water at {water_pos}")\n\n# Place offshore pump\nmove_to(water_pos)\noffshore_pump = place_entity(Prototype.OffshorePump, position=water_pos)\npickup_entity(offshore_pump)'
+        output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        print(result)
+
+
+        #test_string_1 = '# First find water for power generation\nwater_pos = nearest(Resource.Water)\nprint(f"Found water at {water_pos}")\n\n# Place offshore pump\nmove_to(water_pos)\noffshore_pump = place_entity(Prototype.OffshorePump, position=water_pos)\nprint(f"Placed offshore pump at {offshore_pump.position}")\n\n# Place boiler with space for connections\nbuilding_box = BuildingBox(width=Prototype.Boiler.WIDTH + 4, height=Prototype.Boiler.HEIGHT + 4)\ncoords = nearest_buildable(Prototype.Boiler, building_box, offshore_pump.position)\nmove_to(coords.center)\nboiler = place_entity(Prototype.Boiler, position=coords.center)\nprint(f"Placed boiler at {boiler.position}")\n\n# Place steam engine\nbuilding_box = BuildingBox(width=Prototype.SteamEngine.WIDTH + 4, height=Prototype.SteamEngine.HEIGHT + 4)\ncoords = nearest_buildable(Prototype.SteamEngine, building_box, boiler.position)\nmove_to(coords.center)\nsteam_engine = place_entity(Prototype.SteamEngine, position=coords.center)\nprint(f"Placed steam engine at {steam_engine.position}")\n\n# Connect water system\nwater_pipes = connect_entities(offshore_pump, boiler, Prototype.Pipe)\nsteam_pipes = connect_entities(boiler, steam_engine, Prototype.Pipe)\nprint(f"Connected water and steam pipes")\n\n# Add fuel to boiler\nboiler = insert_item(Prototype.Coal, boiler, 50)\nprint(f"Added coal to boiler")\n\n# Wait for power generation\nsleep(5)\nprint(f"Current inventory {inspect_inventory()}")\nprint(f"Entities on the map: {get_entities()}")\nconnect_entities(steam_engine, pumpjack, Prototype.SmallElectricPole)\nconnect_entities(pumpjack, refinery, Prototype.SmallElectricPole)'
+        #output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        #print(result)
+        
+
+
+def test_error_pattern_62(): # DEMO
+        from env.src.game_types import Prototype, Resource, Direction, Position, BuildingBox   
+        
+        LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 50, "wooden-chest": 10, "burner-inserter": 50,"inserter": 50, "transport-belt": 500,
+                                "stone-furnace": 10, "boiler": 2, "offshore-pump": 2, "steam-engine": 2,
+                                "electric-mining-drill": 50, "small-electric-pole": 500, "pipe": 500,
+                                "assembling-machine-2": 10, "electric-furnace": 10, "pipe-to-ground": 100, "underground-belt": 100,
+                                "pumpjack": 10, "oil-refinery": 5, "chemical-plant": 5, "storage-tank": 10,
+                                #"solar-panel": 50,
+                                }
+        
+        instance = FactorioInstance(address='localhost',
+                                bounding_box=200,
+                                tcp_port=27015,
+                                fast=True,
+                                #cache_scripts=False,
+                                inventory=LAB_PLAY_POPULATED_STARTING_INVENTORY) 
+
+
+        test_string_1 = '# First move to oil position\noil_pos = nearest(Resource.CrudeOil)\nmove_to(oil_pos)\nprint(f"Moved to oil at {oil_pos}")\n\n# Use larger building box for pumpjack\nbuilding_box = BuildingBox(width=Prototype.PumpJack.WIDTH + 8, height=Prototype.PumpJack.HEIGHT + 8)\ncoords = nearest_buildable(Prototype.PumpJack, building_box, oil_pos)\nmove_to(coords.center)\npumpjack = place_entity(Prototype.PumpJack, position=coords.center)\nprint(f"Placed pumpjack at {pumpjack.position}")'
+        output_list, result, error, achievements = eval_program_with_achievements(instance, test_string_1)
+        print(result)
+
+
+def test_specific_pattern(): # DEMO
+        from env.src.game_types import Prototype, Resource, Direction, Position, BuildingBox   
+        
+        LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 50, "wooden-chest": 10, "burner-inserter": 50,"inserter": 50, "transport-belt": 500,
+                                "stone-furnace": 10, "boiler": 2, "offshore-pump": 2, "steam-engine": 2,
+                                "electric-mining-drill": 50, "small-electric-pole": 500, "pipe": 500,
+                                "assembling-machine-2": 10, "electric-furnace": 10, "pipe-to-ground": 100, "underground-belt": 100,
+                                "pumpjack": 10, "oil-refinery": 5, "chemical-plant": 5, "storage-tank": 10,
+                                #"solar-panel": 50,
+                                }
+        
+        instance = FactorioInstance(address='localhost',
+                                bounding_box=200,
+                                tcp_port=27015,
+                                fast=True,
+                                #cache_scripts=False,
+                                inventory=LAB_PLAY_POPULATED_STARTING_INVENTORY) 
+
+        path = r"C:\Users\martb\Documents\paperpclip_max\PaperclipMaximiser\eval\tasks\supervised_results\beam_supervised\claude-3-5-sonnet-20241022\plastic_bar_throughput_16_20250217_155215\2"
+        # get all files in path
+        files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+        files = [int(f.replace(".json", "")) for f in files if f.endswith(".json")]
+        files.sort()
+        specific_file_idx = 12
+        for file_idx, file in enumerate(files):
+                # read the json file in
+                with open(os.path.join(path, f"{file}.json"), 'r') as f:
+                        data = json.load(f)
+                if specific_file_idx is not None:
+                        if file != specific_file_idx:
+                                continue
+                        game_state = data['game_state']
+                        game_state_obj = GameState.parse_raw(game_state)
+                        instance.reset(game_state_obj)
+                        code = data['code']
+                        
+                        output_list, result, error, achievements = eval_program_with_achievements(instance, code)
+                        print(result)
+                else:
+                        response = data['response']
+                        print(response)
+                print(f"\n\n")
+        
+        
 if __name__ == '__main__':
         
     #unittest.main()
     #create_nonliquid_items()
-    test_error_pattern_60()
-    #test_achievements_38()
+    #test_specific_pattern()
+    test_error_pattern_62()

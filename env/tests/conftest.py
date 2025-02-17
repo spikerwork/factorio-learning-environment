@@ -1,5 +1,6 @@
 import os
 import sys
+sys.path.append(r"C:\Users\martb\Documents\paperpclip_max\PaperclipMaximiser\env\src")
 from pathlib import Path
 
 import pytest
@@ -26,7 +27,7 @@ def instance():
     try:
         instance = FactorioInstance(address='localhost',
                                     bounding_box=200,
-                                    tcp_port=27000,
+                                    tcp_port=27015,
                                     cache_scripts=False,
                                     fast=True,
                                     inventory={

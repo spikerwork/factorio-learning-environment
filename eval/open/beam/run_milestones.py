@@ -272,12 +272,12 @@ async def main():
 
     task_folder = r"eval\tasks\task_definitions"
     result_path = r"eval\tasks\supervised_results"
-    tasks = ["sulfur_throughput_16"]
+    tasks = ["plastic_bar_throughput_16"]
     search_type = "beam_supervised"
     search_iterations = 1
 
     formatter = RecursiveReportFormatter(
-        chunk_size=128,
+        chunk_size=64,
         llm_call=llm_factory.acall,
         cache_dir='./summary_cache',
     )

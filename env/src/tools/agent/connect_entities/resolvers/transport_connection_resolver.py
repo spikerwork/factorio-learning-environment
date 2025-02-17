@@ -1,7 +1,7 @@
 import math
 from typing import Union, Tuple, List
 from entities import Position, Entity, BeltGroup, Inserter, MiningDrill, TransportBelt, Direction, EntityGroup, \
-    GunTurret, AssemblingMachine, Lab, Chest, Accumulator, Furnace
+    GunTurret, AssemblingMachine, Lab, Chest, Accumulator, Furnace, Boiler, Generator
 from tools.agent.connect_entities.resolver import Resolver
 
 
@@ -60,7 +60,7 @@ class TransportConnectionResolver(Resolver):
                 source_positions = [source.position]
 
         match target:
-            case GunTurret() | AssemblingMachine() | Lab() | Chest() | Accumulator() | Furnace():
+            case GunTurret() | AssemblingMachine() | Lab() | Chest() | Accumulator() | Furnace() | Boiler()| Generator():
                 raise Exception(f"Transport belts cannot be connected directly to a {target.prototype} object as a target. You need to add an inserter that inputs items into {target.prototype} and use the inserter as the target entity.")
 
             case BeltGroup():

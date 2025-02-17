@@ -119,7 +119,8 @@ class MilestonesBeamSearchExecutor(SupervisedTaskExecutorABC):
                                 datapoint_to_save = {
                                 "game_state": step_to_save.start_state.to_raw(),
                                  "code": step_to_save.program.code,
-                                 "response": step_to_save.program.response}
+                                 "response": step_to_save.program.response,
+                                 "program_id": step_to_save.program.id,}
                                 with open(full_trace_debug_folder + f"\\{len(plan.steps)}.json", "w") as f:
                                     json.dump(datapoint_to_save, f)
 

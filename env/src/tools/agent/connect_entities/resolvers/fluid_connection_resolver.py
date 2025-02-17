@@ -30,22 +30,22 @@ class FluidConnectionResolver(Resolver):
         if len(updated_source_entity) == 1:
             entity = updated_source_entity[0]
         if entity.fluid_box:
-            fluid_box = entity.fluid_box[0]
-            return fluid_box['name']
+            fluids = [fluid['name'] for fluid in entity.fluid_box]
+            return fluids
         if isinstance(entity, PumpJack):
-            return "crude-oil"
+            return ["crude-oil"]
         if isinstance(entity, OffshorePump):
-            return "water"
+            return ["water"]
         return None
 
     def resolve(self, source: Union[Position, Entity], target: Union[Position, Entity]) -> List[Tuple[Position, Position]]:
         """Returns prioritized list of source/target position pairs to attempt connections."""
 
-        source_fluid = None
+        source_fluids = None
 
         if isinstance(source, (MultiFluidHandler, FluidHandler)):
-            source_fluid = self._get_source_fluid(source)
-
+            source_fluids = self._get_source_fluid(source)
+            
         # Get source positions in priority order
         match (source, target):
             case (OffshorePump(), _):
@@ -53,7 +53,7 @@ class FluidConnectionResolver(Resolver):
 
             case (Boiler(), Generator() | OilRefinery()):
                 source_positions = [source.steam_output_point]
-                source_fluid = "steam"
+                source_fluids = ["steam"]
             case (Boiler(), ChemicalPlant()):
                 raise Exception(f"Cannot connect a {source.prototype} to a {target.prototype}. This connection is not allowed")
             case (Boiler(), Boiler() | OffshorePump()):
@@ -81,9 +81,8 @@ class FluidConnectionResolver(Resolver):
                     cast(FluidHandler, source),
                     target.position,
                     source.output_connection_points,
-                    source_fluid
                 )
-                source_positions = sorted_positions if sorted_positions else [target.position]
+                source_positions = sorted_positions if sorted_positions else [source.position]
 
             case (Position(), _):
                 source_positions = [source]
@@ -124,13 +123,12 @@ class FluidConnectionResolver(Resolver):
             case OilRefinery() | ChemicalPlant():
                 #if isinstance(source, Boiler):
                 #    raise Exception(f"Cannot connect a {source.prototype} to a {target.prototype}. This connection is not allowed")
-                if not source_fluid:
-                    raise Exception(f"The source does not have fluid in it. Cannot connect an empty source to a {target.prototype}. The {target.prototype} input handlers are fluid specific so source entity needs to have fluid in it")
+                self.check_for_recipe_requirement(target, source_fluids)
                 sorted_positions = self._get_all_connection_points(
                     cast(FluidHandler, target),
                     source_positions[0],
                     target.input_connection_points,
-                    source_fluid
+                    source_fluids
                 )
                 
                 if not sorted_positions:
@@ -183,15 +181,12 @@ class FluidConnectionResolver(Resolver):
                                    fluid_handler: FluidHandler,
                                    reference_pos: Position,
                                    connection_points,
-                                   source_fluid: Optional[str] = None) -> List[Position]:
+                                   source_fluids: Optional[List] = None) -> List[Position]:
         """Get all possible connection points sorted by distance."""
         if len(connection_points) == 0:
             return []
         
-        if (isinstance(fluid_handler, OilRefinery) or isinstance(fluid_handler, ChemicalPlant)):
-            connection_types = [point.type for point in connection_points]
-            if source_fluid and source_fluid not in connection_types:
-                raise Exception(f"Source fluid {source_fluid} not needed and expected by the recipe at {fluid_handler.name} at {fluid_handler.position}")
+        source_fluid = source_fluids[0] if source_fluids else None
         if source_fluid and isinstance(connection_points[0], IndexedPosition):
             connection_points = list(filter(lambda x: x.type == source_fluid, connection_points))
 
@@ -209,3 +204,31 @@ class FluidConnectionResolver(Resolver):
                 valid_points.append(adjusted)
 
         return valid_points
+    
+
+    def _get_target_fluid(self, entity: FluidHandler) -> str:
+        # update the source entity
+        updated_source_entity = self.get_entities(position = entity.position, radius=0)
+        if len(updated_source_entity) == 1:
+            entity = updated_source_entity[0]
+        if entity.fluid_box:
+            fluids = [fluid['name'] for fluid in entity.fluid_box]
+            return fluids
+        if isinstance(entity, PumpJack):
+            return ["crude-oil"]
+        if isinstance(entity, Boiler):
+            return ["water"]
+        return None
+    
+
+    def check_for_recipe_requirement(self, target_entity, source_fluids):
+        if not source_fluids:
+            raise Exception(f"The source does not have fluid in it. Cannot connect an empty source to a {target_entity.prototype}. The {target_entity.prototype} input handlers are fluid specific so source entity needs to have fluid in it")
+        if not target_entity.recipe:
+            raise Exception(f"Cannot connect to a {target_entity.prototype} until a recipe has been set.")
+        input_connections = [x.type for x in target_entity.input_connection_points]
+        # get the overlap between source fluids and input connections
+        fluid_intersections = set(source_fluids).intersection(set(input_connections))
+        if not fluid_intersections:
+            raise Exception(f"Fluids currently at source entity {source_fluids} not needed and expected by the recipe at {target_entity.name} at {target_entity.position}")
+        return True

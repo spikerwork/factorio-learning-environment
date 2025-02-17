@@ -104,6 +104,7 @@ class GameState:
             'inventory': self.inventory.__dict__ if hasattr(self.inventory, '__dict__') else self.inventory,
             'timestamp': self.timestamp,
             'namespace': self.namespace.hex() if self.namespace else ''
+
         }
 
         # Add research state if present
@@ -119,15 +120,6 @@ class GameState:
             }
 
         return json.dumps(data)
-
-    def to_raw(self) -> str:
-        """Convert state to JSON string"""
-        return json.dumps({
-            'entities': self.entities,
-            'inventory': self.inventory.__dict__ if hasattr(self.inventory, '__dict__') else self.inventory,
-            'timestamp': self.timestamp,
-            'namespace': self.namespace.hex() if self.namespace else ''
-        })
 
     def to_instance(self, instance: 'FactorioInstance'):
         """Restore game state to Factorio instance"""

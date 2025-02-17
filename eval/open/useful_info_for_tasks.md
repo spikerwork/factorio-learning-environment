@@ -7,18 +7,19 @@ Engine unit - 6 per 60 seconds
 Electronic circuit - 120 per 60 seconds
 Electric Engine unit - 6 per 60 seconds
 Flying robot frame - 3 per 60 seconds
-Sulfur - 120 per 60 seconds
-Plastic bar - 120 per 60 seconds
+Sulfur - 120 per 60 seconds. Can only be produced by a chemical plant
+Plastic bar - 120 per 60 seconds. Can only be produced by a chemical plant
 Advanced circuit - 10 per 60 seconds
-Advanced circuit - 6 per 60 seconds
+Processing unit - 6 per 60 seconds
 Low density structure - 4 per 60 seconds
 Copper plate - 18.75 per 60 seconds
 Iron plate - 18.75 per 60 seconds
 Stone brick - 18.75 per 60 seconds
+Battery - 20 per 60 seconds. Can only be produced by a chemical plant
 
 Crafting speeds for liquids
-Sulfuric acid - 3000 per 60 seconds
-Lubricant - 600 per 60 seconds
+Sulfuric acid - 3000 per 60 seconds, can only be gotten with a chemical plant
+Lubricant - 600 per 60 seconds. Can only be produced by a chemical plant
 Heavy oil - 300 per 60 seconds with advanced oil processing, 1080 per 60 seconds with Coal liquefaction
 Light oil - 540 per 60 seconds with advanced oil processing, 240 per 60 seconds with Coal liquefaction, 900 per 60 seconds with Heavy oil cracking
 Petroleum gas - 540 per 60 seconds with Basic oil processing, 660 per 60 seconds with advanced oil processing, 120 per 60 seconds with Coal liquefaction

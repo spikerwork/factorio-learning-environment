@@ -667,7 +667,7 @@ local function connect_entities(player_index, source_x, source_y, target_x, targ
     local target_entity = global.utils.get_closest_entity(player, {x = target_x, y = target_y})
 
 
-    if #connection_types == 1 and is_underground_type(connection_types[1]) then
+    if #connection_types == 1 and connection_types[1] == 'pipe-to-ground' then
         
         -- Calculate the direction from start to end.
         local dir = global.utils.get_direction(start_position, end_position)

@@ -9,6 +9,11 @@ global.actions.nearest_buildable = function(player_index, entity_name, bounding_
     local surface = player.surface
     local entity_prototype = game.entity_prototypes[entity_name]
     local needs_resources = entity_prototype.resource_categories ~= nil
+    for category, _ in pairs(entity_prototype.resource_categories) do
+        game.print(category)
+    end
+    local needs_oil = entity_prototype.resource_categories and entity_prototype.resource_categories["basic-fluid"] ~= ni
+    game.print("needs oil: "..tostring(needs_oil))
     local start_pos = center_position or player.position
 
     -- Cache for chunk resources
@@ -32,10 +37,20 @@ global.actions.nearest_buildable = function(player_index, entity_name, bounding_
         if not needs_resources then return true end
 
         -- Quick initial resource count check
-        local total_resources = surface.count_entities_filtered{
-            area = {left_top, right_bottom},
-            collision_mask = "resource-layer"
-        }
+        if needs_oil then
+            local total_resources = surface.count_entities_filtered{
+                area = {left_top, right_bottom},
+                name = "crude-oil",
+                collision_mask = "resource-layer"
+
+            }
+            total_resources = total_resources or 0
+        else
+            local total_resources = surface.count_entities_filtered{
+                area = {left_top, right_bottom},
+                collision_mask = "resource-layer"
+            }
+        end
 
         -- Calculate required coverage
         local min_x = floor(left_top.x)
@@ -43,6 +58,13 @@ global.actions.nearest_buildable = function(player_index, entity_name, bounding_
         local max_x = ceil(right_bottom.x) - 1
         local max_y = ceil(right_bottom.y) - 1
         local required_coverage = (max_x - min_x + 1) * (max_y - min_y + 1)
+        game.print("required coverage: "..tostring(required_coverage))
+        
+
+        if total_resources == nil then
+            total_resources = 0
+        end
+        game.print("total resources2: "..tostring(total_resources))
 
         -- Early exit if not enough resources
         if total_resources < required_coverage then
@@ -124,7 +146,7 @@ global.actions.nearest_buildable = function(player_index, entity_name, bounding_
         local segment_length = 1
         local segment_passed = 0
         local direction = 0  -- 0: right, 1: down, 2: left, 3: up
-        local MAX_RADIUS = 30
+        local MAX_RADIUS = 60
 
         while max(abs(dx), abs(dy)) <= MAX_RADIUS do
             local current_pos = {
@@ -133,7 +155,9 @@ global.actions.nearest_buildable = function(player_index, entity_name, bounding_
             }
 
             if bounding_box then
+                game.print("bounding box1")
                 local is_buildable, left_top, right_bottom = is_buildable_box(current_pos, bounding_box)
+                game.print("bounding box2")
                 if is_buildable then
                     --rendering.clear()
                     rendering.draw_rectangle{

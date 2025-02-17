@@ -16,16 +16,16 @@ class ResourceName(enum.Enum):
 class RecipeName(enum.Enum):
     NuclearFuelReprocessing = "nuclear-fuel-reprocessing"
     UraniumProcessing = "uranium-processing"
-    SulfuricAcid = "sulfuric-acid" # Recipe for crafting sulfuric acid with a chemical plant
-    BasicOilProcessing = "basic-oil-processing" # Recipe for processing petroleum gas with a oil refinery
-    AdvancedOilProcessing = "advanced-oil-processing" # Recipe for processing petroleum gas, heavy oil and light oil with a oil refinery
-    CoalLiquefaction = "coal-liquefaction" # Recipe for getting petroleum gas in a oil refinery
-    HeavyOilCracking = "heavy-oil-cracking" # Recipe for getting light oil in a chemical plant
-    LightOilCracking = "light-oil-cracking" # Recipe for getting petroleum gas in a chemical plant
+    SulfuricAcid = "sulfuric-acid" # Recipe for producing sulfuric acid with a chemical plant
+    BasicOilProcessing = "basic-oil-processing" # Recipe for producing petroleum gas with a oil refinery
+    AdvancedOilProcessing = "advanced-oil-processing" # Recipe for producing petroleum gas, heavy oil and light oil with a oil refinery
+    CoalLiquefaction = "coal-liquefaction" # Recipe for producing petroleum gas in a oil refinery
+    HeavyOilCracking = "heavy-oil-cracking" # Recipe for producing light oil in a chemical plant
+    LightOilCracking = "light-oil-cracking" # Recipe for producing petroleum gas in a chemical plant
 
-    SolidFuelFromHeavyOil = "solid-fuel-from-heavy-oil" # Recipe for solid fuel in a chemical plant
-    SolidFuelFromLightOil = "solid-fuel-from-light-oil" # Recipe for solid fuel in a chemical plant
-    SolidFuelFromPetroleumGas = "solid-fuel-from-petroleum-gas" # Recipe for solid fuel in a chemical plant
+    SolidFuelFromHeavyOil = "solid-fuel-from-heavy-oil" # Recipe for producing solid fuel in a chemical plant
+    SolidFuelFromLightOil = "solid-fuel-from-light-oil" # Recipe for producing solid fuel in a chemical plant
+    SolidFuelFromPetroleumGas = "solid-fuel-from-petroleum-gas" # Recipe for producing solid fuel in a chemical plant
 
     FillCrudeOilBarrel = "fill-crude-oil-barrel"
     FillHeavyOilBarrel = "fill-heavy-oil-barrel"
