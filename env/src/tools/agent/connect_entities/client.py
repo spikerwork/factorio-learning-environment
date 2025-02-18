@@ -158,7 +158,23 @@ class ConnectEntities(Tool):
                 last_exception = e
                 trace_back = e.__traceback__
                 pass
-
+        
+        # try to do the modified straight line connection
+        if ((isinstance(target, ChemicalPlant) or isinstance(target, OilRefinery)) \
+                         or (isinstance(source, ChemicalPlant) or isinstance(source, OilRefinery))): 
+            for point_idx, point_tuple in enumerate(prioritised_list_of_position_pairs):
+                source_pos, target_pos = point_tuple
+                try:
+                    connection = self._create_modified_straight_connection(
+                        source_pos, target_pos,
+                        connection_types,
+                        source_entity=source if isinstance(source, (Entity, EntityGroup)) else None,
+                        target_entity=target if isinstance(target, (Entity, EntityGroup)) else None
+                    )
+                    return connection[0]
+                except Exception as e:
+                    continue
+                
         source_pos = source.position if not isinstance(source, Position) else source
         target_pos = target.position if not isinstance(target, Position) else target
 
@@ -285,8 +301,7 @@ class ConnectEntities(Tool):
                            connection_types: Set[Prototype],
                            dry_run: bool,
                            source_entity: Optional[Entity] = None,
-                           target_entity: Optional[Entity] = None,
-                           last_run = False) -> List[Union[Entity, EntityGroup]]:
+                           target_entity: Optional[Entity] = None) -> List[Union[Entity, EntityGroup]]:
         """Create a connection between two positions"""
 
         connection_type_names = {}
@@ -316,16 +331,6 @@ class ConnectEntities(Tool):
                     )
                 finally:
                     self._clear_collision_boxes()
-                if not result.is_success and last_run \
-                    and ((isinstance(target_entity, ChemicalPlant) or isinstance(target_entity, OilRefinery)) \
-                         or (isinstance(source_entity, ChemicalPlant) or isinstance(source_entity, OilRefinery))): 
-                    try:
-                        adjusted_result = self.try_straight_line_pathing(source_pos, target_pos,
-                                    connection_type_names_values, num_available,
-                                    pathing_radius, dry_run, target_entity, source_entity, names_to_type, metaclasses)
-                        result = adjusted_result if adjusted_result else result
-                    finally:
-                        pass
             case _ if (connection_types & {Prototype.TransportBelt, Prototype.UndergroundBelt}) \
                       or (connection_types & {Prototype.FastTransportBelt, Prototype.FastUndergroundBelt}) \
                       or (connection_types & {Prototype.ExpressTransportBelt, Prototype.ExpressUndergroundBelt}):
@@ -405,6 +410,76 @@ class ConnectEntities(Tool):
         )
 
         return _deduplicate_entities(path) + entity_groups
+
+    def _create_modified_straight_connection(self,
+                           source_pos: Position,
+                           target_pos: Position,
+                           connection_types: Set[Prototype],
+                           source_entity: Optional[Entity] = None,
+                           target_entity: Optional[Entity] = None) -> List[Union[Entity, EntityGroup]]:
+        """Create a connection between two positions"""
+
+        connection_type_names = {}
+        names_to_type = {}
+        metaclasses = {}
+
+        for connection_type in connection_types:
+            connection_prototype, metaclass = connection_type.value
+            metaclasses[connection_prototype] = metaclass
+            connection_type_names[connection_type] = connection_prototype
+            names_to_type[connection_prototype] = connection_type
+
+        inventory = self.inspect_inventory()
+        num_available = inventory.get(connection_prototype, 0)
+        pathing_radius = 0.5
+        connection_type_names_values = list(connection_type_names.values())
+        result = None
+        # Determine connection strategy based on type
+        try:
+            result = self.try_straight_line_pathing(source_pos, target_pos,
+                        connection_type_names_values, num_available,
+                        pathing_radius, target_entity, source_entity, names_to_type, metaclasses)
+            
+        finally:
+            pass
+            
+        if result is None:
+            return None
+
+        # Process created entities
+        path = []
+        groupable_entities = []
+
+        for entity_data in result.entities.values():
+            if not isinstance(entity_data, dict):
+                continue
+
+            try:
+                self._process_warnings(entity_data)
+                entity = metaclasses[entity_data['name']](prototype=names_to_type[entity_data['name']], **entity_data)
+
+                if entity.prototype in (Prototype.TransportBelt, Prototype.UndergroundBelt,
+                                        Prototype.FastTransportBelt, Prototype.FastUndergroundBelt,
+                                        Prototype.ExpressTransportBelt, Prototype.ExpressUndergroundBelt,
+                                        Prototype.StoneWall,
+                                        Prototype.Pipe,Prototype.UndergroundPipe,
+                                        Prototype.SmallElectricPole, Prototype.BigElectricPole, Prototype.MediumElectricPole):
+                    groupable_entities.append(entity)
+                else:
+                    path.append(entity)
+            except Exception as e:
+                if entity_data:
+                    raise Exception(
+                        f"Failed to create {connection_prototype} object from response: {result.raw_response}") from e
+
+        # Process entity groups based on connection type
+        entity_groups = self._process_entity_groups(
+            connection_type, groupable_entities,
+            source_entity, target_entity, source_pos
+        )
+
+        return _deduplicate_entities(path) + entity_groups
+
 
     def _process_warnings(self, entity_data: Dict):
         """Process warnings in entity data"""
@@ -669,7 +744,7 @@ class ConnectEntities(Tool):
 
     def try_straight_line_pathing(self, source_pos, target_pos,
                         connection_type_names_values, num_available,
-                        pathing_radius, dry_run, target_entity, source_entity, names_to_type, metaclasses):
+                        pathing_radius, target_entity, source_entity, names_to_type, metaclasses):
         # if we dont have "pipe" or "pipe-to-ground" in connections, we cant start the process
         if "pipe" not in connection_type_names_values or "pipe-to-ground" not in connection_type_names_values:
             return None
@@ -708,7 +783,7 @@ class ConnectEntities(Tool):
                         inbetween_path = self._attempt_path_finding(
                                     source_pos, target_pos,
                                     connection_type_names_values, num_available,
-                                    pathing_radius, dry_run, False
+                                    pathing_radius, False, False
                                 )
                     finally:
                         self._clear_collision_boxes()
