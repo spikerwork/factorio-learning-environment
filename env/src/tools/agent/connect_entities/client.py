@@ -4,7 +4,7 @@ from typing import Union, Optional, List, Dict, cast, Set
 import numpy
 
 from entities import EntityGroup, Entity, Position, BeltGroup, PipeGroup, ElectricityGroup, TransportBelt, \
-    Pipe, FluidHandler, MiningDrill, Inserter
+    Pipe, FluidHandler, MiningDrill, Inserter, ChemicalPlant, OilRefinery
 from instance import PLAYER, Direction
 from game_types import Prototype, prototype_by_name
 from tools.admin.clear_collision_boxes.client import ClearCollisionBoxes
@@ -47,8 +47,8 @@ class ConnectEntities(Tool):
     def _setup_resolvers(self):
         self.resolvers = {
             ConnectionType.FLUID: FluidConnectionResolver(self.get_entities),
-            ConnectionType.TRANSPORT: TransportConnectionResolver(),
-            ConnectionType.POWER: PowerConnectionResolver(),
+            ConnectionType.TRANSPORT: TransportConnectionResolver(self.get_entities),
+            ConnectionType.POWER: PowerConnectionResolver(self.get_entities),
             ConnectionType.WALL: Resolver(self.get_entities)
         }
 
@@ -142,14 +142,16 @@ class ConnectEntities(Tool):
         prioritised_list_of_position_pairs = resolver.resolve(source, target)
 
         last_exception = None
-        for source_pos, target_pos in prioritised_list_of_position_pairs:
+        for point_idx, point_tuple in enumerate(prioritised_list_of_position_pairs):
+            source_pos, target_pos = point_tuple
             # Handle the actual connection
             try:
                 connection = self._create_connection(
                     source_pos, target_pos,
                     connection_types, False,
                     source_entity=source if isinstance(source, (Entity, EntityGroup)) else None,
-                    target_entity=target if isinstance(target, (Entity, EntityGroup)) else None
+                    target_entity=target if isinstance(target, (Entity, EntityGroup)) else None,
+                    last_run = point_idx == len(prioritised_list_of_position_pairs) - 1
                 )
                 return connection[0]
             except Exception as e:
@@ -163,16 +165,24 @@ class ConnectEntities(Tool):
 
         source_error_message_addition = f"{source}" if isinstance(source, Position) else f"{source.name} at {source.position}"
         target_error_message_addition = f"{target}" if isinstance(target, Position) else f"{target.name} at {target.position}"
+        exception_message = str(last_exception)
+        if exception_message == "nil,":
+            exception_message = "Failed to connect entitites. Please reposition entities or clear potential blockages"
+
         raise Exception(
             f"Failed to connect {set([type.name for type in connection_types])} from {source_error_message_addition} to {target_error_message_addition}. "
-            f"{self.get_error_message(str(last_exception))}"
+            f"{self.get_error_message(exception_message)}"
         )
 
 
     def _resolve_position_into_entity(self, position: Position):
-        entities = self.get_entities(position=position, radius=0.5)
+        # first try to get exact positions
+        entities = self.get_entities(position=position, radius=0)
         if not entities:
-            return position
+            # then try with a radius but if find more than 1, return []
+            entities = self.get_entities(position=position, radius=0.5)
+            if not entities or len(entities) > 1:
+                return position
         if isinstance(entities[0], EntityGroup):
             if isinstance(entities[0], PipeGroup):
                 for pipe in entities[0].pipes:
@@ -275,7 +285,8 @@ class ConnectEntities(Tool):
                            connection_types: Set[Prototype],
                            dry_run: bool,
                            source_entity: Optional[Entity] = None,
-                           target_entity: Optional[Entity] = None) -> List[Union[Entity, EntityGroup]]:
+                           target_entity: Optional[Entity] = None,
+                           last_run = False) -> List[Union[Entity, EntityGroup]]:
         """Create a connection between two positions"""
 
         connection_type_names = {}
@@ -305,7 +316,16 @@ class ConnectEntities(Tool):
                     )
                 finally:
                     self._clear_collision_boxes()
-
+                if not result.is_success and last_run \
+                    and ((isinstance(target_entity, ChemicalPlant) or isinstance(target_entity, OilRefinery)) \
+                         or (isinstance(source_entity, ChemicalPlant) or isinstance(source_entity, OilRefinery))): 
+                    try:
+                        adjusted_result = self.try_straight_line_pathing(source_pos, target_pos,
+                                    connection_type_names_values, num_available,
+                                    pathing_radius, dry_run, target_entity, source_entity, names_to_type, metaclasses)
+                        result = adjusted_result if adjusted_result else result
+                    finally:
+                        pass
             case _ if (connection_types & {Prototype.TransportBelt, Prototype.UndergroundBelt}) \
                       or (connection_types & {Prototype.FastTransportBelt, Prototype.FastUndergroundBelt}) \
                       or (connection_types & {Prototype.ExpressTransportBelt, Prototype.ExpressUndergroundBelt}):
@@ -338,8 +358,9 @@ class ConnectEntities(Tool):
                     )
                 finally:
                     self._clear_collision_boxes()
-
-        if not result.is_success:
+            
+        if result is None or not result.is_success:
+            
             raise Exception(
                # f"Failed to connect {connection_prototype} from {source_pos} to {target_pos}. "
                 f"{self.get_error_message(result.error_message.lstrip())}"
@@ -645,3 +666,128 @@ class ConnectEntities(Tool):
             if entity and isinstance(entity, BeltGroup):
                 return entity.outputs[0].output_position
         return pos
+
+    def try_straight_line_pathing(self, source_pos, target_pos,
+                        connection_type_names_values, num_available,
+                        pathing_radius, dry_run, target_entity, source_entity, names_to_type, metaclasses):
+        # if we dont have "pipe" or "pipe-to-ground" in connections, we cant start the process
+        if "pipe" not in connection_type_names_values or "pipe-to-ground" not in connection_type_names_values:
+            return None
+        # check that inventory has atleast 4 underground pipes
+        inventory = self.inspect_inventory()
+        underground_pipes = inventory.get("pipe-to-ground", 0)
+        if underground_pipes < 4:
+            return None
+        margin = 3
+        # underground pipes can do at most 10 distance
+        max_distance = 10 - margin
+        pathing_radius = 0.5
+        offset_dict = {"UP": {"x": 0, "y": 1}, 
+                       "DOWN": {"x": 0, "y": -1}, 
+                       "LEFT": {"x": 1, "y": 0}, 
+                       "RIGHT": {"x": -1, "y": 0}}
+
+        # do +1 bc python is exclusive for the end of loop
+        # first get the target straight line
+        for target_run_idx in range(1, max_distance + 1):
+            target_straight_line_path_dict = self.create_straight_line_dict(target_entity, target_pos, offset_dict, margin, target_run_idx, num_available)
+            if not target_straight_line_path_dict:
+                    continue    
+            # then for each target straight line, we get the source straight line
+            for source_run_idx in range(1, max_distance + 1):
+                source_straight_line_path_dict = self.create_straight_line_dict(source_entity, source_pos, offset_dict, margin, source_run_idx, num_available)
+                if not source_straight_line_path_dict:
+                        continue
+                # if both are successful, we try to connect them
+                if source_straight_line_path_dict["success"] and target_straight_line_path_dict["success"]:
+                    source_pos = self.get_final_connection_pos(source_straight_line_path_dict, offset_dict, source_entity)
+                    target_pos = self.get_final_connection_pos(target_straight_line_path_dict, offset_dict, target_entity)
+                    
+                    try:
+                        self._extend_collision_boxes(source_pos, target_pos)
+                        inbetween_path = self._attempt_path_finding(
+                                    source_pos, target_pos,
+                                    connection_type_names_values, num_available,
+                                    pathing_radius, dry_run, False
+                                )
+                    finally:
+                        self._clear_collision_boxes()
+                    # if success, we combinethe 2 paths and return
+                    # Else we pickup the straight line pipes and try again with a longer distance
+                    if inbetween_path.is_success:
+                        if source_straight_line_path_dict["path"]:
+                            # add the underground pipes to the source_to_underground_start result
+                            for value in source_straight_line_path_dict["path"].entities.values():
+                                inbetween_path.entities[len(inbetween_path.entities)+1] = value
+                        if target_straight_line_path_dict["path"]:
+                            # add the underground pipes to the underground_end_to_target result
+                            for value in target_straight_line_path_dict["path"].entities.values():
+                                inbetween_path.entities[len(inbetween_path.entities)+1] = value
+                        return inbetween_path
+                    
+                    
+                # pickup source straight line
+                if source_straight_line_path_dict["path"]:
+                    self.pickup_entities(source_straight_line_path_dict["path"], metaclasses, names_to_type)
+                
+            # pickup target straight line
+            if target_straight_line_path_dict["path"]:
+                self.pickup_entities(target_straight_line_path_dict["path"], metaclasses, names_to_type)
+        return None
+    
+    def get_final_connection_pos(self, input_path_dict, offset_dict, input_entity):
+        if input_path_dict["path"]:
+            # do one more offset
+            connection_pos = input_path_dict["connection_position"]
+            offset = offset_dict[input_entity.direction.name]
+            connection_pos = Position(connection_pos.x + offset["x"], connection_pos.y + offset["y"])
+        else:
+            connection_pos = input_path_dict["connection_position"]
+        return connection_pos
+
+    def create_straight_line_dict(self, input_entity, input_pos, offset_dict, margin, run_idx, num_available):
+        entity_direction = input_entity.direction
+        if isinstance(input_entity, ChemicalPlant) or isinstance(input_entity, OilRefinery):
+            if entity_direction.name not in offset_dict:
+                raise Exception(f"Invalid direction for {input_entity.name}")
+            # get the offsets from the directions
+            offset = offset_dict[entity_direction.name]
+            output_dict = self.get_straight_line_path(input_pos, offset, margin, run_idx, num_available)
+            if not output_dict["success"]:
+                return None
+        else:
+            output_dict = {"success": True, "connection_position": input_pos, "path": None}
+        return output_dict
+    
+    def get_straight_line_path(self, starting_pos, offset, margin, distance, num_available):
+        new_straigth_line_end_pos = Position(starting_pos.x + offset["x"] * (distance + margin) , starting_pos.y + offset["y"] * (distance + margin))
+        # continue if new target pos is blocked or surrounded by things
+        if self._is_blocked(new_straigth_line_end_pos, 3):
+            return {"success": False, "connection_position": None, "path": None}
+        # try to find a path from the source to the new target pos
+        # Solely use underground pipes
+        try:
+            self._extend_collision_boxes(starting_pos, new_straigth_line_end_pos)
+            target_entity_straight_path = self._attempt_path_finding(
+                            starting_pos, new_straigth_line_end_pos,
+                            ["pipe-to-ground"], num_available,
+                            0.5, False, True
+                        )
+        finally:
+            self._clear_collision_boxes()
+        if target_entity_straight_path.is_success:
+            return {"success": True, "connection_position": new_straigth_line_end_pos, "path": target_entity_straight_path}
+        return {"success": False, "connection_position": None, "path": None}
+    
+    def _is_blocked(self, pos: Position, radius = 0.5) -> bool:
+        entities = self.get_entities(position=pos, radius=radius)
+        return bool(entities)
+    
+    def pickup_entities(self, path_data, metaclasses, names_to_type):
+        for entity_data in path_data.entities.values():
+            if not isinstance(entity_data, dict):
+                continue
+            # clean up the first path
+            self._process_warnings(entity_data)
+            entity = metaclasses[entity_data['name']](prototype=names_to_type[entity_data['name']], **entity_data)
+            self.pickup_entity(entity)
