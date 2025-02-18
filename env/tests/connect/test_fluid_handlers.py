@@ -59,7 +59,7 @@ def test_electricity_far_west_configuration(game):
 def test_electricity_vertical_close_configuration(game):
     """Test electricity connection with steam engine directly above boiler"""
     boiler_pos = Position(x=-5.5, y=0.5)
-    steam_engine_pos = boiler_pos.up(1)
+    steam_engine_pos = boiler_pos.up(2)
     create_electricity_connection(game, steam_engine_pos, boiler_pos)
 
 
