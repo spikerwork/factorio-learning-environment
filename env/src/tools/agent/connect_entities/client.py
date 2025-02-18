@@ -142,16 +142,14 @@ class ConnectEntities(Tool):
         prioritised_list_of_position_pairs = resolver.resolve(source, target)
 
         last_exception = None
-        for point_idx, point_tuple in enumerate(prioritised_list_of_position_pairs):
-            source_pos, target_pos = point_tuple
+        for source_pos, target_pos in prioritised_list_of_position_pairs:
             # Handle the actual connection
             try:
                 connection = self._create_connection(
                     source_pos, target_pos,
                     connection_types, False,
                     source_entity=source if isinstance(source, (Entity, EntityGroup)) else None,
-                    target_entity=target if isinstance(target, (Entity, EntityGroup)) else None,
-                    last_run = point_idx == len(prioritised_list_of_position_pairs) - 1
+                    target_entity=target if isinstance(target, (Entity, EntityGroup)) else None
                 )
                 return connection[0]
             except Exception as e:
@@ -174,7 +172,7 @@ class ConnectEntities(Tool):
                     return connection[0]
                 except Exception as e:
                     continue
-                
+
         source_pos = source.position if not isinstance(source, Position) else source
         target_pos = target.position if not isinstance(target, Position) else target
 
