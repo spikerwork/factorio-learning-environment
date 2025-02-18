@@ -130,15 +130,17 @@ class FluidConnectionResolver(Resolver):
                     )
                     target_positions = sorted_positions if sorted_positions else [target.position]
                 else:
-                    if source_fluids[0] == 'water':
+                    if 'water' in source_fluids :
                         target_positions = self._get_all_connection_points(
                             cast(FluidHandler, target),
                             source_positions[0],  # Use first source pos for initial sorting
                             target.connection_points,
                             source_fluids=source_fluids
                         )
-                    else:
+                    elif 'steam' in source_fluids:
                         target_positions = [target.steam_output_point]
+                    else:
+                        pass
 
             case OilRefinery() | ChemicalPlant():
                 #if isinstance(source, Boiler):
@@ -148,7 +150,7 @@ class FluidConnectionResolver(Resolver):
                     cast(FluidHandler, target),
                     source_positions[0],
                     target.input_connection_points,
-                    source_fluids
+                    source_fluids=source_fluids
                 )
                 
                 if not sorted_positions:
@@ -202,17 +204,15 @@ class FluidConnectionResolver(Resolver):
                                    fluid_handler: FluidHandler,
                                    reference_pos: Position,
                                    connection_points,
-                                   source_fluids: Optional[List] = None) -> List[Position]:
+                                   source_fluids: Optional[List[str]] = None) -> List[Position]:
         """Get all possible connection points sorted by distance."""
         if len(connection_points) == 0:
             return []
         
-        # find one source fluid that matches the connection point
+
         if source_fluids and isinstance(connection_points[0], IndexedPosition):
-            for source_fluid in source_fluids:
-                connection_points = list(filter(lambda x: x.type == source_fluid, connection_points))
-                if len(connection_points) > 0:
-                    break
+            connection_points = list(filter(lambda x: x.type in source_fluids, connection_points))
+
         # Sort all connection points by distance to reference position
         sorted_points = sorted(
             connection_points,

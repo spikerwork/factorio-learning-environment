@@ -6,6 +6,7 @@ global.actions.load_research_state = function(player_index, research_state)
     -- Reset all research first
     for _, tech in pairs(force.technologies) do
         tech.researched = false
+        force.set_saved_technology_progress(tech.name, nil)
         --tech.enabled = false
     end
 
@@ -22,11 +23,15 @@ global.actions.load_research_state = function(player_index, research_state)
         end
     end
 
+    for name, progress in pairs(research_state.progress) do
+        force.set_saved_technology_progress(name, progress)
+    end
+
     -- Restore current research and progress
     if research_state.current_research then
-        if force.current_research then
-            force.cancel_current_research()
-        end
+        --if force.current_research then
+        --    force.cancel_current_research()
+        --end
         force.add_research(research_state.current_research)
         force.research_progress = research_state.research_progress
     end

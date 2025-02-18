@@ -17,6 +17,7 @@ global.actions.save_research_state = function(player_index)
             })
         end
 
+
         return {
             name = "\""..tech.name.."\"",
             researched = tech.researched,
@@ -26,7 +27,8 @@ global.actions.save_research_state = function(player_index)
             research_unit_count = tech.research_unit_count,
             research_unit_energy = tech.research_unit_energy,
             prerequisites = prerequisites,
-            ingredients = ingredients
+            ingredients = ingredients,
+            --saved_progress = saved_progress  -- This will be nil if no progress is saved
         }
     end
 
@@ -34,7 +36,8 @@ global.actions.save_research_state = function(player_index)
         technologies = {},
         current_research = nil,
         research_progress = 0,
-        research_queue = {}
+        research_queue = {},
+        progress = {}
     }
 
     -- Save all technology states
@@ -46,6 +49,8 @@ global.actions.save_research_state = function(player_index)
     if force.current_research then
         research_state.current_research = "\""..force.current_research.name.."\""
         research_state.research_progress = force.research_progress
+
+        research_state.progress[force.current_research.name] = force.research_progress or 0
     end
 
     -- Save research queue if it exists

@@ -27,7 +27,7 @@ def game(instance):
     }
     instance = FactorioInstance(address='localhost',
                                          bounding_box=200,
-                                         tcp_port=27000,
+                                         tcp_port=27019,
                                          fast=True,
                                          all_technologies_researched=False,
                                          inventory=initial_inventory)
@@ -93,8 +93,18 @@ def test_craft_automation_packs_and_research(game):
     ingredients2 = game.get_research_progress(Technology.Automation)
     assert ingredients1[0].count > ingredients2[0].count, f"Research did not progress. Initial: {ingredients1[0].count}, Current: {ingredients2[0].count}"
 
+    ingredients3 = game.set_research(Technology.Logistics)
+    # Wait for some time to allow research to progress
+    game.sleep(10)
+
     # Save gamestate with research progress
     # Verify that there are no technologies here
+    n_game_state = GameState.from_instance(game.instance)
+
+    game.instance.reset(n_game_state)
+
+    game.sleep(5)
+
     n_game_state = GameState.from_instance(game.instance)
 
     game.instance.reset(n_game_state)

@@ -1,13 +1,12 @@
 # ⚙ Factorio Learning Environment
 
+**Factorio Learning Environment** (FLE) is an open source framework for developing and evaluating LLM agents in the game of [Factorio](https://factorio.com/).
 
-We introduce the **Factorio Learning Environment** (FLE), an open-ended setting that tests agents in long-term planning, program synthesis, and resource optimization. 
+FLE tests agent capabilities in long-term planning, program synthesis, and resource optimization against a set of exponentially scaling challenges, ranging from basic automation to complex factories processing millions of resources per second. 
 
-FLE provides exponentially scaling
-challenges, from basic automation to complex factories processing millions of resource units per second. 
 We provide two settings:
 1. **Lab-play**: Eight structured tasks with fixed resources.
-2. **Open-play** Unbounded task of building the largest factory on a procedurally generated map. 
+2. **Open-play** Unbounded task of building the largest possible factory on a procedurally generated map. 
 
 Our results demonstrate that models still lack strong spatial reasoning. In lab-play, we find that while LLMs
 exhibit promising short-horizon skills, they are unable to operate effectively in constrained environments, reflecting limitations in error analysis. In open-play, while LLMs discover automation strategies that improve growth (e.g electric-powered drilling), they fail to achieve complex 
@@ -18,13 +17,13 @@ automation (e.g electronic-circuit manufacturing).
 
 
 ## Quick Links
-- [Installation Guide](##installation)
-- [Environment Documentation](##environment-documentation)
-- Agents API Reference
-- [Tool Documentation](##tool-documentation)
+- [Installation](##installation)
+- [Environment](##environment-documentation)
+- [Agents](##agent-documentation)
+- [Tools](##tool-documentation)
 - [Project Structure](##project-structure)
-- Contributing Guidelines
-- License Information
+- [Benchmarks](##benchmarks)
+- [Contributions](##contributing-guidelines)
 
 ## Installation
 
@@ -70,12 +69,15 @@ docker-compose -f docker-compose-1.yml up -d
 4. **Run Eval**:
    1. Open Play: 
    2. Tasks: 
+   
 ## Environment Documentation
 
 FLE is an agent evaluation environment built on the game of Factorio, a popular resource management simulation game.
 
-Agents interact with **FLE** by code synthesis through a **REPL** (Read-Eval-Print-Loop) pattern, observing the current game state via previous program output streams, then generating and executing
-Python code to implement their intended actions, and finally returning useful feedback for the next iteration.
+Agents interact with **FLE** by code synthesis through a **REPL** (Read-Eval-Print-Loop) pattern:
+1. **Observation**: The agent observes the world through the output streams (stderr/stdout) of their last program.
+2. **Action**: The agent generates a Python program to perform their desired action.
+3. **Feedback**: The environment executes the program, assigns variables, add classes/functions to the namespace, and provides an output stream.
 
 <!DOCTYPE html>
 <html>
@@ -84,7 +86,7 @@ Python code to implement their intended actions, and finally returning useful fe
 <tr>
 
 <td class="python-code">
-<b>Code</b>
+<b>Action</b>
 <pre>
 # 1. Get iron patch and place mining drill
 drill = place_entity(
@@ -105,7 +107,7 @@ print(get_entities())
 </pre>
 </td>
 <td class="bash-code">
-<b>Output<b/>
+<b>Feedback<b/>
 <pre>
 >>> [ BurnerMiningDrill(fuel=Inventory({'coal': 4}), 
 >>>                     name='burner-mining-drill', 
@@ -132,7 +134,6 @@ print(get_entities())
 </html>
 
 
-
 Agents are provided with the Python standard library, and an API comprising [tools](##tool-documentation) designed to balance expressiveness with tractability.
 
 Each tool returns a typed object (e.g an Inventory) which can be stored as a named **variable** in the Python namespace, and referenced later in the episode. 
@@ -142,17 +143,17 @@ This design enables agents to maintain complex state representations and build h
 
 Agents observe **stdout** and **stderr** - the output streams of their program. Thus, agents may intentionally print relevant objects and computations to the output stream to construct observations.
 
-Mistakes in the code or invalid operations raise typed exceptions with detailed context that is written to stderr. 
+Mistakes in the code or invalid operations raise typed **exceptions** with detailed context that is written to stderr. 
 This enables agents to reactively debug their programs after execution, and proactively use runtime assertions during execution to self-verify their actions. 
 
-Agents are able to enhance their internal representation of the game state in two ways, by defining: 
-1. Utility functions for reuse throughout an episode, to encapsulate successful
-logic
+Agents are able to enhance their internal representation of the game state by defining: 
+1. Utility functions for reuse throughout an episode, to encapsulate previously successful logic
 2. Classes in the namespace to better organize the data retrieved from the game.
 
 ## Agent Documentation
 
-The Factorio Learning Environment provides a flexible agent architecture for developing and evaluating AI models that can play Factorio. 
+The Factorio Learning Environment provides a straightforward agent architecture for developing and evaluating AI models that can play Factorio.
+
 Agents operate in *episodes*, with each step involving observation, planning, and action execution through Python code synthesis.
 The agent maintains state through a conversation history that includes its actions (_assistant_) and the stdout/stderr from the environment (_user_).
 At each step, agents generate Python code policies that are executed in the environment.
@@ -164,15 +165,16 @@ Agents live in `agents`, and implement an abstract base class (AgentABC) that de
 The abstract base class defines two methods that all agents must implement:
 ```
 # Generates the next action based on conversation history and environment response (including score / achievements etc).
-step(conversation, response) -> Policy:
+step(conversation: Conversation, response: Response) -> Policy:
 
-# Handles cleanup when an episode terminates
-end(conversation, completion):
+# Handles cleanup when an episode terminates, i.e for reporting results etc.
+end(conversation: Conversation, completion: CompletionState) -> None:
 ```
 
-Our default agent is `BasicAgent`, which incorporates some mechanisms for managing context over long (+1000 step) runs. Namely:
+Our default agent is `BasicAgent`, which incorporates some basic mechanisms for managing context over long (+1000 step) runs. Namely:
 1. Every 32 steps, the all older interactions are summarised into a report in the system message.  
 2. Conversations are clipped to remain under 350k characters (~87k tokens).
+3. We strip out all _historical_ observations of game entities, as this both fills up the context, and confuses the agent.
 
 We include some basic utilities for calling different LLMs (`agents/utils/llm_factory.py`), for formatting the conversation history (`agents/utils/formatters/conversation_formatter_abc.py`), and for parsing responses into valid Python (`agents/utils/parse_response.py`)
 
@@ -185,6 +187,8 @@ class MinimalAgent(AgentABC):
     """
     This is a minimal Agent implementation, which takes the current conversation (including the most recent response)
     and generates a simple Python code policy to execute the next step.
+    
+    Note: This will blow up context length on longer runs, without some context pruning/management.
     """
     def __init__(self, model, system_prompt, *args, **kwargs):
         super().__init__(model, system_prompt, *args, **kwargs)
@@ -241,6 +245,7 @@ config:
 flowchart LR
     A("fa:fa-comment-dots Agent")
     subgraph s1["Learning Environment"]
+    
         B("fa:fa-code Interpreter")
         n1("client.py")
     end
@@ -269,6 +274,8 @@ flowchart LR
 4. Add an `agent.md` file, which should contain a markdown description of the tool. This file will be used by the agent to understand how to use the tool
 
 Next time you run an eval, the tool will automatically be available to the agent and documented in the agent context.
+
+5. (Optional) Create a test suite in `env/tests/actions` for your new tool. 
 
 ### Core Tools
 
@@ -299,49 +306,149 @@ Next time you run an eval, the tool will automatically be available to the agent
 |  `launch_rocket` | Controls rocket silo launches                    | - Validates launch requirements<br>- Handles launch sequence<br>- Returns updated silo state |
 |  `print` | Outputs debug information to stdout              | - Supports various object types<br>- Useful for monitoring state<br>- Returns formatted string |
 
-## Project Structure
-
+# Project Structure
+Below is an overview of how the project is structured. Some directories also contain more detailed readmes. 
 ```
 factorio-learning-environment/
-├── cluster/ # Contains  
-│     ├── docker/
-│     │     ├── config/
-│     │     └── mods/
-│     ├── local/
-│     │     └── assets/
-│     ├── remote/
-│     └── scenarios/
+├── agents/                            # Factorio Learning Environment
+│     ├── utils/                          # Some utilities for building an agent
+│     ├── agent_abc.py                    # Abstract class to extend
+│     └── basic_agent.py                  # Agent implementation we used for our experiments
+├── env/                            # Factorio Learning Environment
+│     ├── src/                          # Main implementation
+│     │     ├── exceptions/                 # Custom exceptions (WIP)
+│     │     ├── gym/                        # Gym environment wrapper (deprecated but possibly useful)
+│     │     ├── lib/                        # General purpose Lua utilities (e.g serialization etc)
+│     │     ├── models/                     # Core objects used during eval
+│     │     ├── rcon/                       # RCON wrapper for communicating with the game
+│     │     ├── tools/                      # Agent and admin tools
+│     │     │    ├── admin/                     # ~17 Tools for managing state, persistence, scoring etc 
+│     │     │    └── agent/                     # ~27 Tools that the agent can use
+│     │     ├── utils/                      # Python utilities
+│     │     ├── entities.py                 # Python object model of the game entities
+│     │     ├── game_types.py               # Technologies, Recipes, Resources
+│     │     ├── instance.py                 # Environment state manager
+│     │     └── namespace.py                # Namespace the agent can read/write variables to. 
+│     └── tests/                        # ~350 test cases
+├── cluster/                        # Everything needed to launch Factorio servers
+│     ├── docker/                       # Docker container definition of the Factorio server
+│     │     ├── config/                     # Factorio server configuration files
+│     │     └── mods/                       # Mods (deprecated)
+│     ├── local/                        # Tools for dynamically creating Docker Compose files for clusters
+│     ├── remote/                       # Tools for deploying Factorio clusters onto AWS 
+│     └── scenarios/                    # Factorio scenarios for Lab-play and Open-play
 │         ├── default_lab_scenario/
 │         └── open_world/
-├── data/
-│     ├── blueprints_to_policies/
-│     ├── icons/
-│     ├── prompts/
-│     ├── recipes/
-│     └── scripts/
-├── docs/
-│     └── assets/
-├── env/
-│     ├── src/
-│     │     ├── exceptions/
-│     │     ├── gym/
-│     │     ├── lib/
-│     │     ├── models/
-│     │     ├── rcon/
-│     │     ├── tools/
-│     │     └── utils/
-│     └── tests/
+├── data/                           # Miscellaneous data
+│     ├── blueprints_to_policies/       # Code to scrape Factorio blueprint sites and create Python policies
+│     ├── icons/                        # Icons for Factorio entities and items
+│     ├── prompts/                      # Prompts (deprecated)
+│     ├── recipes/                      # Factorio recipes in JSONL format
+│     └── scripts/                      # Misc Lua scripts (deprecated)
+├── docs/                           # Website
+│     └── assets/                       # Videos / Images
 └── eval/
-      ├── open/
-      │     ├── auto_curriculum/
-      │     ├── beam/
-      │     ├── independent_runs/
-      │     ├── mcts/
-      │     ├── model/
-      │     └── plots
-      └── tasks
-         └── supervised_results
+      ├── open/                     # Implementations for running agents in the open game
+      │     ├── beam/                   # Implementation for Beam sampling
+      │     ├── independent_runs/       # Implementation for independent eval runs
+      │     ├── mcts/                   # Implementation for MCTS sampling
+      │     └── plots/                  # Run results and plots
+      └── tasks                     # Implementations for running agents against lab-play tasks
+            ├── task_definitions/       # JSON definition of task
+            ├── task_abc.py             # Abstract task definition
+            └── throughput_task.py      # A basic task checking for a production throughput quota
 ```
+
+## Benchmarks
+
+We measured FLE execution performance across different configurations to measure performance. All benchmarks were run on a Macbook Pro M4 128GB, with 100 iterations per operation on a subset of the existing tools.
+
+### Direct API Calls (Factorio Client)
+Executing tools against the Factorio server, while a Factorio game client is connected.
+
+| Operation            | Operations/Min | Operations/Sec |
+|---------------------|----------------|----------------|
+| place_entity_next_to| 2,578.20       | 42.97         |
+| place_entity        | 12,057.63      | 200.96        | 
+| move_to             | 8,649.89       | 144.16        |
+| harvest_resource    | 16,599.44      | 276.66        |
+| craft_item          | 16,875.14      | 281.25        |
+| connect_entities    | 1,664.70       | 27.74         |
+| rotate_entity       | 12,281.31      | 204.69        | 
+| insert_item         | 13,044.42      | 217.41        | 
+| extract_item        | 17,167.43      | 286.12        |
+| inspect_inventory   | 17,036.32      | 283.94        | 
+| get_resource_patch  | 7,004.49       | 116.74        | 
+| **Total**           | **7,513.29**   | **125.22**    |
+
+### Direct API Calls (Headless)
+Executing tools against the Factorio server without a game client.
+
+| Operation            | Operations/Min | Operations/Sec |
+|---------------------|----------------|----------------|
+| place_entity_next_to| 4,856.51       | 80.94         |
+| place_entity        | 22,332.72      | 372.21        |
+| move_to             | 16,005.59      | 266.76        | 
+| harvest_resource    | 32,727.01      | 545.45        |
+| craft_item          | 36,223.63      | 603.73        | 
+| connect_entities    | 2,926.01       | 48.77         | 
+| rotate_entity       | 23,467.46      | 391.12        | 
+| insert_item         | 25,154.28      | 419.24        | 
+| extract_item        | 32,997.26      | 549.95        |
+| inspect_inventory   | 28,401.56      | 473.36        |
+| get_resource_patch  | 8,736.30       | 145.61        |
+| **Total**           | **13,094.98**  | **218.25**    |
+
+### Python Interpreter (Factorio Client)
+Executing tools as part of a Python policy string, while a Factorio game client is connected.
+
+| Operation            | Operations/Min | Operations/Sec |
+|---------------------|----------------|----------------|
+| place_entity_next_to| 4,714.52       | 78.58         |
+| place_entity        | 4,774.13       | 79.57         |
+| move_to             | 4,005.77       | 66.76         |
+| harvest_resource    | 3,594.59       | 59.91         |
+| craft_item          | 4,985.02       | 83.08         |
+| connect_entities    | 1,497.11       | 24.95         |
+| rotate_entity       | 4,914.69       | 81.91         | 
+| insert_item         | 5,046.99       | 84.12         |
+| extract_item        | 4,743.08       | 79.05         |
+| inspect_inventory   | 4,838.31       | 80.64         |
+| get_resource_patch  | 2,593.11       | 43.22         |
+| **Total**           | **3,639.10**   | **60.65**     |
+
+
+### Python Interpreter (Headless)
+Executing tools as part of a Python policy string, without a game client.
+
+| Operation            | Operations/Min | Operations/Sec |
+|---------------------|----------------|----------------|
+| place_entity_next_to| 5,069.60       | 84.49         |
+| place_entity        | 5,238.61       | 87.31         |
+| move_to             | 4,979.59       | 82.99         |
+| harvest_resource    | 3,247.09       | 54.12         |
+| craft_item          | 5,854.27       | 97.57         |
+| connect_entities    | 2,150.21       | 35.84         |
+| rotate_entity       | 5,370.21       | 89.50         |
+| insert_item         | 5,065.89       | 84.43         |
+| extract_item        | 5,449.07       | 90.82         |
+| inspect_inventory   | 5,638.67       | 93.98         |
+| get_resource_patch  | 2,479.41       | 41.32         |
+| **Total**           | **4,103.53**   | **68.39**     |
+
+
+### Key Observations
+
+1. **Headless vs Client Performance**: The headless server configuration consistently outperforms the client version, with direct API calls showing approximately 74% better throughput (218.25 vs 125.22 ops/sec).
+
+2. **Interpreter Overhead**: Adding the interpreter layer introduces significant overhead:
+   - Headless: Drops from 218.25 to 68.39 ops/sec (~69% reduction)
+   - Client: Drops from 125.22 to 60.65 ops/sec (~52% reduction)
+
+3. **Operation Variability**: Some operations show more significant performance variations:
+   - `connect_entities` is consistently the slowest operation across all configurations (because it relies on pathfinding)
+   - `craft_item` and `extract_item` tend to be among the fastest operations
+
 
 
 [//]: # (## Data)
