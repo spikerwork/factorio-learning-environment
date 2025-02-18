@@ -15,7 +15,7 @@ from tenacity import retry, wait_exponential
 from eval.open.mcts.planning_mcts import get_mining_setup
 from eval.tasks.throughput_task import ThroughputTask
 logger = logging.basicConfig(level=logging.INFO)
-from agents.utils import TaskResponse
+from agents import TaskResponse
 import os
 import json
 

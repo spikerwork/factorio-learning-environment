@@ -5,7 +5,7 @@ from eval.tasks.task_abc import TaskABC
 from env.src.utils.achievements import eval_program_with_achievements
 from models.game_state import GameState
 import copy
-from agents.utils import TaskResponse
+from agents import TaskResponse
 
 LAB_PLAY_POPULATED_STARTING_INVENTORY = {"coal": 500, "burner-mining-drill": 50, "wooden-chest": 10, "burner-inserter": 50,"inserter": 50, "transport-belt": 500,
                                 "stone-furnace": 10, "boiler": 2, "offshore-pump": 2, "steam-engine": 2,

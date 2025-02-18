@@ -28,17 +28,18 @@ class Python(str):
         return v
 
 
-class PolicyMeta(BaseModel):
-    output_tokens: int
-    input_tokens: int
-    total_tokens: int
-
-class Policy(BaseModel):
-    code: Python
-    meta: PolicyMeta
+#class PolicyMeta(BaseModel):
+#    output_tokens: int
+#    input_tokens: int
+#    total_tokens: int
+#
+#class Policy(BaseModel):
+#    code: Python
+#    meta: PolicyMeta
 
 class TaskResponse:
     meta: Dict[str, Any] = {}
+    success: bool
 
 class Response:
     score: float
