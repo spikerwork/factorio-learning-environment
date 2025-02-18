@@ -362,7 +362,7 @@ class ConnectEntities(Tool):
                 finally:
                     self._clear_collision_boxes()
             
-        if result is None or not result.is_success:
+        if not result.is_success:
             
             raise Exception(
                # f"Failed to connect {connection_prototype} from {source_pos} to {target_pos}. "
