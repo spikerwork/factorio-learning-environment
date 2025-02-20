@@ -155,6 +155,7 @@ output_inserter = place_entity_next_to(Prototype.BurnerInserter,
                                            assembler.position,
                                            direction=Direction.LEFT,
                                            spacing=0)
+output_chest = place_entity(Prototype.WoodenChest, position = output_inserter.drop_position)
 # add coal to inserters
 output_inserter = insert_item(Prototype.Coal, output_inserter, quantity = 5)
 input_inserter = insert_item(Prototype.Coal, input_inserter, quantity = 5)
@@ -169,16 +170,16 @@ assembler = get_entity(Prototype.AssemblingMachine1, assembler.position)
 assert assembler.energy > 0, f"Assembling machine at {assembler.position} is not receiving power" 
 # Connect input belt
 belts = connect_entities(furnace_output_inserter,
-                     ass_machine_input_inserter,
+                     assembly_machine_input_inserter,
                      Prototype.TransportBelt)
 print(f"Connected assembling machine at {assembler.position} to furnace_output_inserter with {belts}")
 
-# wait for 15 seconds to if structure works and machine is creating copper cables
+# wait for 15 seconds to if structure works and machine is creating copper cables into the output chest
 sleep(15)
-assembler = get_entity(Prototype.AssemblingMachine1, assembler.position)
-inventory = inspect_inventory(assembler)
-print(f"Inventory of assembler: {inventory}") 
-
+output_chest = get_entity(Prototype.WoodenChest, output_chest.position)
+inventory = inspect_inventory(output_chest)
+copper_cables_in_inventory = inventory[Prototype.CopperCable]
+assert copper_cables_in_inventory > 0, f"No copper cables created"
 ```
 
 ### 4. Research Systems
