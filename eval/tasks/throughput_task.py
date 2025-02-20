@@ -115,14 +115,6 @@ class ThroughputTask(TaskABC):
         """Code to provision the task environment"""
         pass
 
-    def setup(self, instance):
-        """setup function"""
-        instance.initial_inventory = self.starting_inventory
-        instance.reset()
-        self.setup_instance(instance)
-        self.starting_game_state = GameState.from_instance(instance)
-
-
     def enchance_response_with_task_output(self, response: str, task_response: TaskResponse) -> str:
         task_throughputs = task_response.meta.get("achievements", None)
         if task_throughputs:
