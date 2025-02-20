@@ -67,6 +67,10 @@ class FluidConnectionResolver(Resolver):
         
         source_fluid_positions = self.get_source_fluid_positions(source)
         target_fluid_positions = self.get_target_fluid_positions(target)
+<<<<<<< HEAD
+=======
+        source_fluid_positions, target_fluid_positions = self.deal_with_edge_cases(source, source_fluid_positions, target, target_fluid_positions)
+>>>>>>> environment_updates
 
         if isinstance(target, MultiFluidHandler):
             self.check_for_recipe_requirement(target, source_fluid_positions)
@@ -207,8 +211,19 @@ class FluidConnectionResolver(Resolver):
         if type is "", then any input fluid connection is allowed to that position
         """
         match target:
+<<<<<<< HEAD
             case OffshorePump() | Boiler():
                 target_positions = [IndexedPosition(x=pos.x, y=pos.y, type="water") for pos in target.connection_points]
+=======
+            # offshore pump does not expect anything, only provides water
+            case OffshorePump():
+                target_positions = [IndexedPosition(x=pos.x, y=pos.y, type="") for pos in target.connection_points]
+            # boiler can also receive steam because you can do engine-to-boiler connections
+            case Boiler():
+                target_steam_positions = [IndexedPosition(x=target.steam_output_point.x, y=target.steam_output_point.y, type="steam")]
+                target_water_positions = [IndexedPosition(x=pos.x, y=pos.y, type="water") for pos in target.connection_points]
+                target_positions = target_steam_positions + target_water_positions
+>>>>>>> environment_updates
             case Generator():
                 target_positions = [IndexedPosition(x=pos.x, y=pos.y, type="steam") for pos in target.connection_points]
             case MultiFluidHandler():
@@ -238,4 +253,21 @@ class FluidConnectionResolver(Resolver):
                         target_positions.append(IndexedPosition(x=pipe.position.right().x, y=pipe.position.right().y, type=""))
             case _:
                 raise Exception(f"{type(target)} is not a supported target object for fluid connection")
+<<<<<<< HEAD
         return target_positions
+=======
+        return target_positions
+    
+    def deal_with_edge_cases(self, source, source_positions, target, target_positions):
+        """
+        To allow for source-target mixing, we add some additional logic
+        """
+        # boiler to boiler only move water
+        if isinstance(source, Boiler) and isinstance(target, Boiler):
+            source_positions = [x for x in source_positions if x.type == "water"]
+            target_positions = [x for x in target_positions if x.type == "water"]
+        # boiler to pump only move water
+        if isinstance(source, Boiler) and isinstance(target, OffshorePump):
+            source_positions = [x for x in source_positions if x.type == "water"]
+        return source_positions, target_positions
+>>>>>>> environment_updates
