@@ -120,7 +120,6 @@ def initiate_executor(config, instances, version, db_client, version_description
 
 def initiate_task_configs(input_task):
     if input_task["task_type"] == "populated_lab_play":
-        input_task["config"]["starting_inventory"] = LAB_PLAY_POPULATED_STARTING_INVENTORY
         return ThroughputTask(**input_task["config"])
     task_config = ThroughputTask(**input_task["config"])
     return task_config
@@ -271,7 +270,7 @@ async def main():
     useful_info_path = r"eval\open\useful_info_for_tasks.md"
     with open(useful_info_path, "r") as f:
         useful_info = f.read()
-    prompt = SYSTEM_PROMPT + '\n\n' + API_SCHEMA + '\n\nObservations:\n' + OBSERVATION_SPACE + '\n\n' + useful_info + '\n\n'
+    prompt = SYSTEM_PROMPT + '\n\n' + API_SCHEMA + '\n\nObservations:\n' + OBSERVATION_SPACE + '\n\n'
     
 
     model_to_evaluate = "claude-3-5-sonnet-20241022"
@@ -287,7 +286,7 @@ async def main():
 
     task_folder = r"eval\tasks\task_definitions"
     result_path = r"eval\tasks\supervised_results\\beam_supervised"
-    tasks = ["electronic_circuit_throughput_16_extended"]
+    tasks = ["lubricant_throughput_16"]
     search_type = "beam_supervised"
     search_iterations = 1
 
@@ -314,7 +313,7 @@ async def main():
         # read in the input task
         with open(os.path.join(task_folder, f"{task_key}.json"), "r") as f:
             input_task = json.load(f)
-        task = initiate_task_configs(input_task)
+        task = ThroughputTask(**input_task)
         task = initialise_starting_state(instances[0], task)
         run_id = f"{task_key}_{dt_string}"
         save_path = os.path.join(result_path, model_to_evaluate, run_id)
@@ -329,14 +328,14 @@ async def main():
         # save the config dict
         with open(os.path.join(save_path, f"config.json"), "w") as f:
             json.dump(config_dict, f)
-        print(f"Starting MCTS search for task {task.task}")
+        print(f"Starting MCTS search for task {task.goal_description}")
         results = await executor.search_supervised(
         n_iterations=search_iterations,
         skip_failures=False,
         task=task,
         run_id = f"{task_key}_{dt_string}"
         )
-        print(f"Task: {task.task} has been completed")
+        print(f"Task: {task.goal_description} has been completed")
         result_dict = {"results" :results,
                        "starting_inventory": task.starting_inventory,
                        "target_entity": task.throughput_entity,}
