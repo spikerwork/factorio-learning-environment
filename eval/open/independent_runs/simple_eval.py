@@ -352,27 +352,37 @@ def main():
     sulfur_task = construct_task_object(task_folder, "sulfur_throughput_16", instance, ThroughputTask)
 
     petro_task = construct_task_object(task_folder, "petroleum_gas_throughput_16", instance, ThroughputTask)
+    iron_ore = construct_task_object(task_folder, "iron_ore_throughput_16", instance, ThroughputTask)
+    
+    iron_plate = construct_task_object(task_folder, "iron_plate_throughput_16", instance, ThroughputTask)
+    
     steel_plate_task = construct_task_object(task_folder, "steel_plate_throughput_16", instance, ThroughputTask)
     electronic_circuit_task = construct_task_object(task_folder, "electronic_circuit_throughput_16", instance, ThroughputTask)
     
     red_science_task = construct_task_object(task_folder, "automation_science_pack_throughput_16", instance, ThroughputTask)
     gear_wheel_task = construct_task_object(task_folder, "iron_gear_wheel_throughput_16", instance, ThroughputTask)
     
+    oil_task = construct_task_object(task_folder, "crude_oil_throughput_16", instance, ThroughputTask)
+    
     # anthropic/claude-3.5-sonnet-open-router
     # meta-llama/Llama-3.3-70B-Instruct-Turbo
+    # deepseek/deepseek-chat-open-router
+    # google/gemini-2.0-flash-001-open-router
+    # gpt-4o
+    # gpt-4o-mini
     run_configs = [
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = red_science_task.goal_description), "resume_version": 887, "task": red_science_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = red_science_task.goal_description), "resume_version": 888, "task": red_science_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = red_science_task.goal_description), "resume_version": 889, "task": red_science_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = red_science_task.goal_description), "resume_version": 890, "task": red_science_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = steel_plate_task.goal_description), "resume_version": 891, "task": steel_plate_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = steel_plate_task.goal_description), "resume_version": 892, "task": steel_plate_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = steel_plate_task.goal_description), "resume_version": 893, "task": steel_plate_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = steel_plate_task.goal_description), "resume_version": 894, "task": steel_plate_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = lubricant_task.goal_description), "resume_version": 895, "task": lubricant_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = lubricant_task.goal_description), "resume_version": 896, "task": lubricant_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = lubricant_task.goal_description), "resume_version": 897, "task": lubricant_task},
-        {"agent": BasicAgent(model="gpt-4o-mini-2024-07-18", system_prompt=system_prompt, goal = lubricant_task.goal_description), "resume_version": 898, "task": lubricant_task},
+        {"agent": BasicAgent(model="anthropic/claude-3.5-sonnet-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2095, "task": sulfur_task},
+        {"agent": BasicAgent(model="anthropic/claude-3.5-sonnet-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2096, "task": sulfur_task},
+        {"agent": BasicAgent(model="anthropic/claude-3.5-sonnet-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2097, "task": sulfur_task},
+        {"agent": BasicAgent(model="anthropic/claude-3.5-sonnet-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2098, "task": sulfur_task},
+        {"agent": BasicAgent(model="deepseek/deepseek-chat-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2095, "task": sulfur_task},
+        {"agent": BasicAgent(model="deepseek/deepseek-chat-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2096, "task": sulfur_task},
+        {"agent": BasicAgent(model="deepseek/deepseek-chat-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2097, "task": sulfur_task},
+        {"agent": BasicAgent(model="deepseek/deepseek-chat-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2098, "task": sulfur_task},
+        {"agent": BasicAgent(model="google/gemini-2.0-flash-001-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2095, "task": sulfur_task},
+        {"agent": BasicAgent(model="google/gemini-2.0-flash-001-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2096, "task": sulfur_task},
+        {"agent": BasicAgent(model="google/gemini-2.0-flash-001-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2097, "task": sulfur_task},
+        {"agent": BasicAgent(model="google/gemini-2.0-flash-001-open-router", system_prompt=system_prompt, goal = sulfur_task.goal_description), "resume_version": 2098, "task": sulfur_task},
     ]
 
     # Update resume versions if provided
