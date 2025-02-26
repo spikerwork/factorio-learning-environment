@@ -32,7 +32,6 @@ class PolicyMeta(BaseModel):
     output_tokens: int
     input_tokens: int
     total_tokens: int
-    text_response: str
 
 class Policy(BaseModel):
     code: Python
@@ -40,7 +39,6 @@ class Policy(BaseModel):
 
 class TaskResponse(BaseModel):
     meta: Dict[str, Any] = {}
-    success: bool
 
 class Response(BaseModel):
     score: float
@@ -49,9 +47,6 @@ class Response(BaseModel):
     task: TaskResponse
     step: int
     ticks: int
-    code: str
-    created_at: datetime.datetime
-    response: str
 
 
 class CompletionReason(enum.Enum):
