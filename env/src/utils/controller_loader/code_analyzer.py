@@ -60,7 +60,7 @@ class CodeAnalyzer:
                 # Build function arguments with type annotations
                 value = node.value.value
                 if value and  isinstance(value, str):
-                    self.lines.append(value)
+                    self.lines.append(f'"""\n{value}\n"""')
 
             def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
                 # Handle annotated assignments (type hints)
