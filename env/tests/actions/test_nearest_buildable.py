@@ -1,4 +1,6 @@
 import pytest
+
+from cluster.local.cluster_ips import get_local_container_ips
 from game_types import Prototype, Resource
 from entities import Position, BoundingBox, BuildingBox, Direction
 from instance import FactorioInstance
@@ -16,9 +18,11 @@ from instance import FactorioInstance
 
 @pytest.fixture()
 def game():
+    ips, udp_ports, tcp_ports = get_local_container_ips()
+
     instance = FactorioInstance(address='localhost',
                                 bounding_box=200,
-                                tcp_port=27019,
+                                tcp_port=tcp_ports[-1],
                                 cache_scripts=False,
                                 fast=True,
                                 inventory={
@@ -126,12 +130,14 @@ def test_nearest_buildable_mining_drill(game):
         building_box=drill_box,
         center_position=Position(5, 5)
     )
+    game.move_to(boundingbox_coords.center)
     can_build = game.can_place_entity(
         Prototype.BurnerMiningDrill,
         direction=Direction.UP,
         position=boundingbox_coords.center
     )
     assert can_build is True
+    game.place_entity(Prototype.BurnerMiningDrill, direction=Direction.UP, position=boundingbox_coords.center)
 
 def test_nearest_buildable_invalid_position(game):
     """
