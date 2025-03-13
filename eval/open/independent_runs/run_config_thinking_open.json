@@ -1,0 +1,10 @@
+[
+  {"task": "open_play.json", "model": "claude-3-7-sonnet-20250219"},
+  {"task": "open_play.json", "model": "claude-3-7-sonnet-20250219"},
+  {"task": "open_play.json", "model": "claude-3-7-sonnet-20250219"},
+  {"task": "open_play.json", "model": "claude-3-7-sonnet-20250219"},
+  {"task": "open_play.json", "model": "o3-mini-high"},
+  {"task": "open_play.json", "model": "o3-mini-high"},
+  {"task": "open_play.json", "model": "o3-mini-high"},
+  {"task": "open_play.json", "model": "o3-mini-high"}
+]
